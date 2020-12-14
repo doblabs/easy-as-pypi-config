@@ -22,31 +22,35 @@
 # TORT OR OTHERWISE,  ARISING FROM,  OUT OF  OR IN  CONNECTION WITH THE
 # SOFTWARE   OR   THE   USE   OR   OTHER   DEALINGS  IN   THE  SOFTWARE.
 
-"""Provides CLI runner() test fixture, for interacting with Click app."""
+"""Useful generic file fixtures."""
 
+import os
+import py
+import tempfile
+
+import fauxfactory
 import pytest
-
-pytest_plugins = (
-    # *** External fixtures.
-
-    # Import tmp_appdirs fixture.
-    'easy_as_pypi_apppth.tests.appdirs_mock',
-
-    # *** Published fixtures.
-
-    # Import fixtures: filename, filepath.
-    'easy_as_pypi_config.tests.file_fakes',
-
-    # *** Internal fixtures.
-
-    # Import config_instance fixture.
-    'tests.fixtures.config_instance',
-    # Import config_root fixture.
-    'tests.fixtures.config_root',
-)
 
 
 @pytest.fixture
-def app_name():
-    return 'easy-as-pypi-config-tests'
+def filename():
+    """Provide a filename string."""
+    return fauxfactory.gen_utf8()
+
+
+@pytest.fixture
+def filepath(tmpdir, filename):
+    """Provide a fully qualified pathame within our tmp-dir."""
+    return os.path.join(tmpdir.strpath, filename)
+
+
+@pytest.fixture(scope="session")
+def tmpdir_ro(request):
+    # https://stackoverflow.com/questions/25525202/py-test-temporary-folder-for-the-session-scope
+    # Make a temporary directory, and wrap the path string in a Path object,
+    # so that `.remove` works, and so test fixtures can treat it same as a
+    # `tmpdir` builtin pytest fixture.
+    _tmpdir = py.path.local(tempfile.mkdtemp())
+    request.addfinalizer(lambda: _tmpdir.remove(rec=1))
+    return _tmpdir
 
