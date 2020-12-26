@@ -30,10 +30,10 @@ import pytest
 
 
 @pytest.fixture
-def config_instance(tmpdir, faker):
+def config_instance(tmpdir):
     """Provide a (dynamicly generated) ConfigObj instance."""
 
-    def generate_config(**kwargs):
+    def generate_config():
         cfg_dict = generate_dict(**kwargs)
         # NOPE: You'd overwrite your user's file with the default path:
         #   from easy_as_pypi_config.fileboss import default_config_path
@@ -45,17 +45,12 @@ def config_instance(tmpdir, faker):
 
     # ***
 
-    def generate_dict(**kwargs):
-        cfg_dict = {}
-
-        # ***
-
-        cfg_foo = {}
-        cfg_dict['foo'] = cfg_foo
-
-        cfg_foo.setdefault('bar', kwargs.get('bar', 'baz'))
-
-        # ***
+    def generate_dict():
+        cfg_dict = {
+            'foo' : {
+                'bar': 'baz',
+            },
+        }
 
         return cfg_dict
 
