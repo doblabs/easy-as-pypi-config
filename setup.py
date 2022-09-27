@@ -38,8 +38,8 @@ requirements = [
     'config-decorator > 2.0.14, < 2.0.16',  # I.e., release 2.0.15, or working.
 
     # ActiveState/appdirs + Singleton (app-wide access w/out appname) + `mkdir -p`.
-    #  https://github.com/tallybark/easy-as-pypi-apppth#🛣
-    'easy-as-pypi-apppth',
+    #  https://github.com/doblabs/easy-as-pypi-appdirs#🛣
+    'easy-as-pypi-appdirs',
 
     # Click + ansi_escape_room (color) + convenience.
     #  https://github.com/tallybark/easy-as-pypi-termio#🍉

@@ -29,7 +29,7 @@ import pytest
 
 from config_decorator import KeyChainedValue
 
-from easy_as_pypi_apppth import register_application
+from easy_as_pypi_appdirs import register_application
 
 from easy_as_pypi_config import fileboss
 from easy_as_pypi_config.defaults import register_conf_filename

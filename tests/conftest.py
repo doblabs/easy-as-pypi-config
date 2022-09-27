@@ -30,7 +30,7 @@ pytest_plugins = (
     # *** External fixtures.
 
     # Import tmp_appdirs fixture.
-    'easy_as_pypi_apppth.tests.appdirs_mock',
+    'easy_as_pypi_appdirs.tests.appdirs_mock',
 
     # *** Published fixtures.
 

@@ -29,7 +29,7 @@ import pathlib  # noqa: F401
 import pytest
 from unittest import mock
 
-from easy_as_pypi_apppth import register_application
+from easy_as_pypi_appdirs import register_application
 
 from easy_as_pypi_config import defaults
 from easy_as_pypi_config.fileboss import (  # noqa: F401
