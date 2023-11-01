@@ -1,9 +1,11 @@
-.. ##########################
+.. #################################
 .. easy-as-pypi-config Documentation
-.. ##########################
+.. #################################
+
+.. vim:tw=0:ts=3:sw=3:et:norl:nospell:ft=rst
 
 .. .. |easy-as-pypi-config| replace:: ``easy-as-pypi-config``
-.. .. _easy-as-pypi-config: https://github.com/tallybark/easy-as-pypi-config
+.. .. _easy-as-pypi-config: https://github.com/doblabs/easy-as-pypi-config
 
 .. Documentation for |easy-as-pypi-config|_.
 
