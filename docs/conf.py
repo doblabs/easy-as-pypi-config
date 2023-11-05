@@ -255,7 +255,6 @@ project = project_dist
 copyright = project_copy
 author = project_auth
 
-# (lb): Using setuptools_scm magic, per
 # easy-as-pypi uses poetry-dynamic-versioning, so no need to maintain
 # the version here; we can grab it from the package.
 # - This approach originally inspired by setuptools_scm (pre-Poetry):
@@ -363,7 +362,7 @@ html_theme_options = {
 
 # https://docs.readthedocs.io/en/latest/vcs.html?highlight=conf_py_path
 html_context = {
-    # Enable the "Edit in GitHub" link within the header of each page.
+    # Enable the "Edit on GitHub" link within the header of each page.
     'display_github': True,
     # Set the following variables to generate the resulting github URL for each page.
     # Format Template: https://{{ github_host|default("github.com") }}
@@ -371,8 +370,14 @@ html_context = {
     #   /{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
     'github_user': project_ghuser,
     'github_repo': project_ghrepo,
-    # Branch name.
-    'github_version': 'develop/',
+    # This branch name controls the *Edit on GitHub* on RTD page headers.
+    # USYNC: The main/default GH branch: 'release'.
+    # - MAYBE: Replace hardcoded value with {{ template.value }},
+    #          or maybe use `git rev-parse --abbrev-ref=loose HEAD`.
+    #    import subprocess
+    #    completed_proc = subprocess.run(['git', 'rev-parse', '--abbrev-ref=loose', 'HEAD'], capture_output=True)
+    #    completed_proc.stdout.decode().strip()
+    'github_version': 'release/',
     # Path in the checkout to the docs root.
     'conf_py_path': 'docs/',
 }
@@ -581,4 +586,8 @@ linkcheck_anchors_ignore = [
     #   `<https://easy_as_pypi.readthedocs.io/en/latest/contributing.html#get-started>`__
     "get-started",
 ]
+# 2023-11-01: linkcheck now reports broken on local links, not sure why.
+#   sphinx-build --version: 6.2.1. See also:
+#     ../.venv-easy-as-pypi/lib/python3.11/site-packages/sphinx/__init__.py
+linkcheck_ignore = ["code-of-conduct.html"]
 
