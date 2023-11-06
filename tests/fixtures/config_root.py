@@ -28,7 +28,7 @@ def basic_config_root():
             return ''
 
     @ConfigRoot.section('baz')
-    class ConfigurableFoo(object):
+    class ConfigurableBaz(object):
         pass
 
     return ConfigRoot
