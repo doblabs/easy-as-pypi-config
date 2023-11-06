@@ -1,6 +1,6 @@
 # vim:tw=0:ts=2:sw=2:noet:ft=make
 # Author: Landon Bouma <https://tallybark.com/>
-# Project: https://github.com/doblabs/ <varies>
+# Project: https://github.com/<varies>
 # Pattern: https://github.com/doblabs/easy-as-pypi#🥧
 # License: MIT
 
@@ -857,8 +857,12 @@ isort_check_only:
 # - CXREF: *PEP 257 - Docstring Conventions*:
 #     https://www.python.org/dev/peps/pep-0257/
 
+MAKE_LINT_SKIP_PYDOCSTYLE ?= false
+
 pydocstyle: _depends_active_venv
-	@pydocstyle $(SOURCE_DIR)/ tests/
+	@if ! $(MAKE_LINT_SKIP_PYDOCSTYLE); then \
+		pydocstyle $(SOURCE_DIR)/ tests/; \
+	fi;
 .PHONY: pydocstyle
 
 # ***
@@ -1193,4 +1197,25 @@ endif
 whoami:
 	@echo $(PACKAGE_NAME)
 .PHONY: whoami
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+# Optional project and private Makefiles to override any of the above.
+# e.g., maybe you need to override EAPP's poetry-install --with list:
+#
+#   develop: editables editable
+#       @. "$(MAKETASKS_SH)" && \
+#           PO_INSTALL_WITH="--with docs,tests,typing" \
+#           make_develop ...
+#   ...
+
+# Derived project Makefile.
+MAKEFILE_PROJECT_AFTER ?= Makefile.project.after
+
+-include $(MAKEFILE_PROJECT_AFTER)
+
+# Private user Makefile.
+MAKEFILE_LOCAL_AFTER ?= Makefile.local.after
+
+-include $(MAKEFILE_LOCAL_AFTER)
 
