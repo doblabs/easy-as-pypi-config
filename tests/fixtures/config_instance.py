@@ -13,7 +13,7 @@ from configobj import ConfigObj
 def config_instance(tmpdir):
     """Provide a (dynamicly generated) ConfigObj instance."""
 
-    def generate_config():
+    def generate_config(**kwargs):
         cfg_dict = generate_dict(**kwargs)
         # NOPE: You'd overwrite your user's file with the default path:
         #   from easy_as_pypi_config.fileboss import default_config_path
