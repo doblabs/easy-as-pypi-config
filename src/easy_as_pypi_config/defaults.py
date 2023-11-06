@@ -24,9 +24,7 @@
 
 import sys
 
-__all__ = (
-    'register_conf_filename',
-)
+__all__ = ("register_conf_filename",)
 
 
 def register_conf_filename(conf_filename):
@@ -35,5 +33,4 @@ def register_conf_filename(conf_filename):
 
 
 this = sys.modules[__name__]
-this.conf_filename = 'app.conf'
-
+this.conf_filename = "app.conf"

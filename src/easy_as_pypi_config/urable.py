@@ -33,12 +33,10 @@ from .fileboss import (
     default_config_path,
     load_config_obj,
     warn_user_config_errors,
-    write_config_obj
+    write_config_obj,
 )
 
-__all__ = (
-    'ConfigUrable',
-)
+__all__ = ("ConfigUrable",)
 
 
 class ConfigUrable(object):
@@ -88,15 +86,15 @@ class ConfigUrable(object):
     def create_config(self, force):
         if not self.config_path:
             # It's up to the DEV to ensure this.
-            raise AttributeError('ConfigUrable missing ‘config_path’')
+            raise AttributeError("ConfigUrable missing ‘config_path’")
 
         cfgfile_exists = os.path.exists(self.config_path)
         if cfgfile_exists and not force:
-            exit_warning(_('Config file exists'))
+            exit_warning(_("Config file exists"))
 
         self.reset_config()
         click_echo(
-            _('Initialized default config file at {}').format(
+            _("Initialized default config file at {}").format(
                 highlight_value(self.config_path),
             )
         )
@@ -162,16 +160,14 @@ class ConfigUrable(object):
                 process_option(keyval)
 
         def process_option(keyval):
-            key, value = keyval.split('=', 2)
-            parts = key.split('.')
+            key, value = keyval.split("=", 2)
+            parts = key.split(".")
             try:
                 setting = self.config_root.find_setting(parts)
             except KeyError:
                 setting = None
             if setting is None:
-                exit_warning(
-                    _('ERROR: Unknown config option: “{}”').format(key)
-                )
+                exit_warning(_("ERROR: Unknown config option: “{}”").format(key))
             setting.value_from_cliarg = value
 
         return _inject_cli_settings()
@@ -208,4 +204,3 @@ class ConfigUrable(object):
         self.config_root.apply_items(config_obj, skip_unset=skip_unset)
         write_config_obj(config_obj)
         self.cfgfile_exists = True
-

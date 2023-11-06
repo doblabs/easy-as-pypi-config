@@ -53,4 +53,3 @@ def tmpdir_ro(request):
     _tmpdir = py.path.local(tempfile.mkdtemp())
     request.addfinalizer(lambda: _tmpdir.remove(rec=1))
     return _tmpdir
-

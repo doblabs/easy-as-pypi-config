@@ -35,7 +35,6 @@ from .fileboss import (  # noqa: F401
     echo_config_obj,
     load_config_obj,
     warn_user_config_errors,
-    write_config_obj
+    write_config_obj,
 )
 from .urable import ConfigUrable  # noqa: F401
-

@@ -28,9 +28,7 @@ from gettext import gettext as _
 #
 #  from dob_bright.reports.render_results import render_results
 
-__all__ = (
-    'echo_config_decorator_table',
-)
+__all__ = ("echo_config_decorator_table",)
 
 
 def echo_config_decorator_table(
@@ -56,12 +54,10 @@ def echo_config_decorator_table(
 
         val_def = str(keyval.value)
         if val_def != str(keyval.default):
-            val_def += val_def and ' ' or ''
+            val_def += val_def and " " or ""
             val_def += encode_default(str(keyval.default))
 
-        val_row = [
-            condec.section_path(sep='.')
-        ] if not exclude_section else []
+        val_row = [condec.section_path(sep=".")] if not exclude_section else []
         val_row += [
             keyval.name,
             val_def,
@@ -71,9 +67,7 @@ def echo_config_decorator_table(
         sec_key_vals.append(val_row)
 
     def echo_table():
-        headers = [
-            _("Section")
-        ] if not exclude_section else []
+        headers = [_("Section")] if not exclude_section else []
         headers += [
             _("Name"),
             _("Value {}").format(encode_default(_("Default"))),
@@ -90,8 +84,6 @@ def echo_config_decorator_table(
         # 2019-11-30: (lb): I switched from [square brackets] to <angle brackets>
         # to avoid JSON-encoded lists being [[double bracketed]] (which triggered
         # extra mental cycles upon sight).
-        return '<{}>'.format(text)
+        return "<{}>".format(text)
 
     _echo_config_decorator_table()
-
-

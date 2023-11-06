@@ -40,17 +40,18 @@ from easy_as_pypi_termio.errors import echo_warning, exit_warning
 from . import defaults
 
 __all__ = (
-    'create_configobj',
-    'default_config_path',
-    'default_config_path_abbrev',
-    'echo_config_obj',
-    'load_config_obj',
-    'warn_user_config_errors',
-    'write_config_obj',
+    "create_configobj",
+    "default_config_path",
+    "default_config_path_abbrev",
+    "echo_config_obj",
+    "load_config_obj",
+    "warn_user_config_errors",
+    "write_config_obj",
 )
 
 
 # ***
+
 
 def default_config_path():
     # (Weird) Side-effect: Directory might be created.
@@ -63,17 +64,18 @@ def default_config_path():
 def default_config_path_abbrev():
     # Path.home() is Python 3.5+. See os.path.expanduser('~') for older Python.
     user_home = str(Path.home())
-    abbrev_path = re.sub(r'^{}'.format(user_home), '~', default_config_path())
+    abbrev_path = re.sub(r"^{}".format(user_home), "~", default_config_path())
     return abbrev_path
 
 
 # ***
 
-def create_configobj(conf_path, errname=''):
+
+def create_configobj(conf_path, errname=""):
     try:
         return ConfigObj(
             conf_path,
-            encoding='UTF8',
+            encoding="UTF8",
             interpolation=False,
             write_empty_values=False,
         )
@@ -82,13 +84,16 @@ def create_configobj(conf_path, errname=''):
         #       Parsing failed with several errors.
         #       First error at line 55.
         msg = _("Failed to load {0} config at “{1}”: {2}").format(
-            errname, conf_path, str(err),
+            errname,
+            conf_path,
+            str(err),
         )
         echo_warning(msg)
         return None
 
 
 # ***
+
 
 def echo_config_obj(config_obj):
     def _echo_config_obj():
@@ -109,7 +114,7 @@ def echo_config_obj(config_obj):
         return temp_f
 
     def open_and_print_dump(temp_f):
-        with open(temp_f.name, 'r') as fobj:
+        with open(temp_f.name, "r") as fobj:
             click_echo(fobj.read().strip())
         os.unlink(temp_f.name)
 
@@ -118,8 +123,10 @@ def echo_config_obj(config_obj):
 
 # ***
 
+
 def load_config_obj(configfile_path):
     """"""
+
     def _empty_config_obj():
         try:
             config_obj = create_config_obj()
@@ -140,7 +147,7 @@ def load_config_obj(configfile_path):
     def create_config_obj():
         config_obj = ConfigObj(
             configfile_path,
-            encoding='UTF8',
+            encoding="UTF8",
             interpolation=False,
             write_empty_values=False,
             # Note that ConfigObj has a raise_errors param, but if False, it
@@ -151,21 +158,22 @@ def load_config_obj(configfile_path):
         return config_obj
 
     def exit_parse_error(err):
-        msg = _(
-            'ERROR: Your config file at “{}” has a syntax error: “{}”'
-        ).format(configfile_path, str(err))
+        msg = _("ERROR: Your config file at “{}” has a syntax error: “{}”").format(
+            configfile_path, str(err)
+        )
         exit_warning(msg)
 
     def exit_duplicates(err):
-        msg = _(
-            'ERROR: Your config file at “{}” has a duplicate setting: “{}”'
-        ).format(configfile_path, str(err))
+        msg = _("ERROR: Your config file at “{}” has a duplicate setting: “{}”").format(
+            configfile_path, str(err)
+        )
         exit_warning(msg)
 
     return _empty_config_obj()
 
 
 # ***
+
 
 def write_config_obj(config_obj):
     def _write_config_obj():
@@ -175,7 +183,7 @@ def write_config_obj(config_obj):
 
     def ensure_config_has_filename_or_exit():
         if not config_obj.filename:
-            raise AttributeError('ConfigObj missing ‘filename’')
+            raise AttributeError("ConfigObj missing ‘filename’")
 
     def ensure_file_dirs_or_mkdirs_or_exit():
         try:
@@ -196,14 +204,12 @@ def write_config_obj(config_obj):
 
     def die_write_failed(config_obj, err):
         hint = extract_hint(err)
-        msg = _(
-            '{}: {} “{}”: “{}”{}'
-        ).format(
-            _('ERROR'),
-            _('Failed to write file at'),
+        msg = _("{}: {} “{}”: “{}”{}").format(
+            _("ERROR"),
+            _("Failed to write file at"),
             config_obj.filename,
             str(err),
-            ' ({})'.format(hint) if hint else '',
+            " ({})".format(hint) if hint else "",
         )
         exit_warning(msg)
 
@@ -212,11 +218,11 @@ def write_config_obj(config_obj):
         #   UnicodeEncodeError: 'ascii' codec can't encode character
         #     '\u2018' in position 1135: ordinal not in range(128)
         try:
-            unknowns = err.object[err.start:err.end]
+            unknowns = err.object[err.start : err.end]
         except Exception:
-            return ''
+            return ""
         else:
-            hint = '{}: {}'.format(_('Perhaps unknown character(s)'), unknowns)
+            hint = "{}: {}".format(_("Perhaps unknown character(s)"), unknowns)
             return hint
 
     return _write_config_obj()
@@ -224,7 +230,8 @@ def write_config_obj(config_obj):
 
 # ***
 
-def warn_user_config_errors(errs, which=''):
+
+def warn_user_config_errors(errs, which=""):
     """"""
 
     def _warn_user_config_errors():
@@ -237,32 +244,29 @@ def warn_user_config_errors(errs, which=''):
         #   MAYBE: (lb): Well, unless it's a user typo, then perhaps
         #            a config-audit command/operation could be useful.
         #            Or just don't effup yerconfig.
-        warned = warn_user_config_settings(errs, _('value errors'))
+        warned = warn_user_config_settings(errs, _("value errors"))
         return warned
 
     def warn_user_config_settings(lookup, what):
         if not lookup:
             return False
         lines = assemble_lines(lookup)
-        msg = _(
-            "The {} contains {}:\n{}"
-        ).format(which, what, '\n'.join(lines))
+        msg = _("The {} contains {}:\n{}").format(which, what, "\n".join(lines))
         echo_warning(msg)
         return True
 
-    def assemble_lines(node, keys='', lines=None):
+    def assemble_lines(node, keys="", lines=None):
         if lines is None:
             lines = []
         for key, item in node.items():
             if isinstance(item, dict):
-                nkey = keys + '.' if keys else ''
+                nkey = keys + "." if keys else ""
                 assemble_lines(item, nkey + key, lines)
             elif not keys and not item:
                 # Unrecognized section.
-                lines.append('- [{}]'.format(key))
+                lines.append("- [{}]".format(key))
             else:
-                lines.append('- {}.{} → {}'.format(keys, key, str(item)))
+                lines.append("- {}.{} → {}".format(keys, key, str(item)))
         return lines
 
     return _warn_user_config_errors()
-
