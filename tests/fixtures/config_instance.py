@@ -5,9 +5,8 @@
 
 import os
 
-from configobj import ConfigObj
-
 import pytest
+from configobj import ConfigObj
 
 
 @pytest.fixture

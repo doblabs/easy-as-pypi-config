@@ -6,10 +6,10 @@
 """Useful generic file fixtures."""
 
 import os
-import py
 import tempfile
 
 import fauxfactory
+import py
 import pytest
 
 

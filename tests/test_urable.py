@@ -7,9 +7,7 @@ import os
 import pathlib
 
 import pytest
-
 from config_decorator import KeyChainedValue
-
 from easy_as_pypi_appdirs import register_application
 
 from easy_as_pypi_config import fileboss

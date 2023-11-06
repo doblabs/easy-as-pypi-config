@@ -3,18 +3,15 @@
 # Copyright © 2018-2020 Landon Bouma. All rights reserved.
 # License: MIT
 
-from gettext import gettext as _
-
 import os
 import re
 import tempfile
+from gettext import gettext as _
 from pathlib import Path
 
 from configobj import ConfigObj, ConfigObjError, DuplicateError, ParseError
-
 from easy_as_pypi_appdirs import AppDirs
 from easy_as_pypi_appdirs.exists_or_mkdirs import must_ensure_file_path_dirred
-
 from easy_as_pypi_termio.echoes import click_echo
 from easy_as_pypi_termio.errors import echo_warning, exit_warning
 

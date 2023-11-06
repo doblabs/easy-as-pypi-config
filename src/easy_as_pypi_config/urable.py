@@ -4,7 +4,6 @@
 # License: MIT
 
 import os
-
 from gettext import gettext as _
 
 from easy_as_pypi_termio.echoes import click_echo, highlight_value

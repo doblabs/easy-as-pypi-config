@@ -4,12 +4,11 @@
 # License: MIT
 
 import os
-import re
 import pathlib  # noqa: F401
-
-import pytest
+import re
 from unittest import mock
 
+import pytest
 from easy_as_pypi_appdirs import register_application
 
 from easy_as_pypi_config import defaults
@@ -20,7 +19,7 @@ from easy_as_pypi_config.fileboss import (  # noqa: F401
     echo_config_obj,
     load_config_obj,
     warn_user_config_errors,
-    write_config_obj
+    write_config_obj,
 )
 
 

@@ -4,7 +4,6 @@
 # License: MIT
 
 import pytest
-
 from config_decorator import section
 
 
