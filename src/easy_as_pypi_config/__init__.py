@@ -19,3 +19,7 @@ from .fileboss import (  # noqa: F401
     write_config_obj,
 )
 from .urable import ConfigUrable  # noqa: F401
+
+# This version is substituted on poetry-build by poetry-dynamic-versioning.
+# - Consequently, __version__ remains empty when installed in 'editable' mode.
+__version__ = ""
