@@ -12,8 +12,13 @@ UPDEPS_CACHE_BASE="${UPDEPS_CACHE_BASE:-${UPDEPS_CACHE_DIR:-.git}/ohmyrepos-upda
 # The cache contains PID of process or parent, depending.
 UPDEPS_CACHE_FILE="${UPDEPS_CACHE_FILE:-${UPDEPS_CACHE_BASE}$$}"
 
-# Call either sets this directly or passes to update-faithful-begin.
+# Call either set these directly or pass to update-faithful-begin.
 UPDEPS_CANON_BASE_ABSOLUTE="${UPDEPS_CANON_BASE_ABSOLUTE}"
+UPDEPS_TMPL_SRC_DATA="${UPDEPS_TMPL_SRC_DATA}"
+UPDEPS_TMPL_SRC_FORMAT="${UPDEPS_TMPL_SRC_FORMAT}"
+
+# The Git commit title. The body is not customizable.
+UPDEPS_GENERIC_COMMIT_SUBJECT="${UPDEPS_GENERIC_COMMIT_SUBJECT:-Deps: Update faithfuls}"
 
 # ***
 
@@ -26,7 +31,7 @@ DTRACE=false
 
 source_deps () {
   # Ensure coreutils installed (from Linux pkg mgr, or from macOS Homebrew).
-  insist_cmd 'realpath'
+  _upful_insist_cmd 'realpath'
 
   # Load the logger library, from github.com/landonb/sh-logger.
   # - Includes print commands: info, warn, error, debug.
@@ -70,12 +75,12 @@ source_dep_git_put_wise () {
 
 # ***
 
-insist_cmd () {
-  local cmdname="$1"
+_upful_insist_cmd () {
+  local cmd_name="$1"
 
-  command -v "${cmdname}" > /dev/null && return 0
+  command -v "${cmd_name}" > /dev/null && return 0
 
-  >&2 echo "ERROR: Missing system command ‘${cmdname}’."
+  >&2 echo "ERROR: Missing system command ‘${cmd_name}’."
 
   exit 1
 }
@@ -159,22 +164,16 @@ update_faithful_file () {
 
   # ***
 
-  # If update-faithful called on a canon project file itself, skip it.
-  local local_file_realpath="$(realpath "${local_file}")"
-  local canon_file_realpath="$(realpath "${canon_file_absolute}")"
+  ! report_done_if_symlink "${local_file}" \
+    || return 0
 
-  if [ "${local_file_realpath}" = "${canon_file_realpath}" ]; then
-    local what_happn="is canon"
-
-    print_update_faithful_progress_info "${local_file}" "${what_happn}"
-
-    return 0
-  fi
+  ! report_done_if_same_file "${local_file}" "${canon_file_absolute}" \
+    || return 0
 
   # ***
 
   local canon_head
-  canon_head="$(print_canon_scoped_head "${canon_file_absolute}")"
+  canon_head="$(print_scoped_head "${canon_file_absolute}")"
 
   if ${success} && ! examine_and_update_local_from_canon \
     "${local_file}" "${canon_file_absolute}" "${canon_file_relative}" "${canon_head}" \
@@ -267,12 +266,10 @@ must_git_nothing_or_only_deletes_staged_or_faithful_update_underway () {
     return 0
   fi
 
-  local projpath="${1:-$(pwd)}"
-
   warn "ERROR: Cannot start update-faithful on a repo with staged changes."
   warn "- See for yourself:"
   warn "  "
-  warn "    cd \"${projpath}\" && git status"
+  warn "    cd \"$(pwd)\" && git status"
 
   exit 1
 }
@@ -329,6 +326,43 @@ must_be_file_or_absent () {
   must_be_file "$1" "$2" ${absent_ok}
 }
 
+# ***
+
+# If update-faithful called on a canon project file itself, skip it.
+report_done_if_same_file () {
+  local local_file="$1"
+  local canon_file_absolute="$2"
+
+  # If update-faithful called on a canon project file itself, skip it.
+  local local_file_realpath="$(realpath "${local_file}")"
+  local canon_file_realpath="$(realpath "${canon_file_absolute}")"
+
+  if [ "${local_file_realpath}" = "${canon_file_realpath}" ]; then
+    local what_happn="is canon"
+
+    print_update_faithful_progress_info "${local_file}" "${what_happn}"
+
+    return 0
+  fi
+
+  return 1
+}
+
+# We don't clobber symlinks (assume user knows what they're doing).
+report_done_if_symlink () {
+  local local_file="$1"
+
+  if [ -h "${local_file}" ]; then
+    local what_happn="isa link"
+
+    print_update_faithful_progress_info "${local_file}" "${what_happn}"
+
+    return 0
+  fi
+
+  return 1
+}
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
 examine_and_update_local_from_canon () {
@@ -353,7 +387,7 @@ examine_and_update_local_from_canon () {
 
   # See if local file matches canon's HEAD version.
   local canon_head_private
-  canon_head_private="$(print_canon_head "${canon_file_absolute}")"
+  canon_head_private="$(print_head_sha "${canon_file_absolute}")"
 
   if [ "${canon_head}" != "${canon_head_private}" ]; then
     has_no_diff "${local_file}" "${canon_file_absolute}" "${canon_file_relative}" "${canon_head_private}" \
@@ -375,12 +409,12 @@ examine_and_update_local_from_canon () {
 
 # ***
 
-print_canon_head () {
-  local canon_file_absolute="$1"
+print_head_sha () {
+  local any_repo_file_path="$1"
   local use_scoping="${2:-false}"
 
   (
-    cd "$(dirname "${canon_file_absolute}")"
+    cd "$(dirname "${any_repo_file_path}")"
 
     local canon_head="HEAD"
 
@@ -402,12 +436,12 @@ print_canon_head () {
   )
 }
 
-print_canon_scoped_head () {
-  local canon_file_absolute="$1"
+print_scoped_head () {
+  local any_repo_file_path="${1:-.}"
 
   local use_scoping=true
 
-  print_canon_head "${canon_file_absolute}" "${use_scoping}"
+  print_head_sha "${any_repo_file_path}" "${use_scoping}"
 }
 
 # ***
@@ -602,6 +636,8 @@ update_local_from_canon () {
   local local_strayed=$7
   local local_matches_HEAD=$8
 
+  local short_head="$(git_sha_shorten "${canon_head}")"
+
   # ***
 
   warn_info_failing () {
@@ -613,9 +649,17 @@ update_local_from_canon () {
     info
   }
 
+  print_help_indented_scoped_meld () {
+    # This is not a simple "meld \"${local_file}\" \"${canon_file_absolute}\" &"
+    # because we need the scoped version of the canon file.
+    printf "%s"                      "( cd \"$(dirname "${canon_file_absolute}")\" \\
+                                        && meld \"$(pwd)/${local_file}\" \\
+                                           <(git show ${short_head}:\"${canon_file_relative}\") ) &"
+  }
+
   warn_usage_hint_add_meld_compare_cpyst () {
     UPDEPS_MELD_CMP_LIST+="
-                                      meld \"${local_file}\" \"${canon_file_absolute}\" &"
+                                      $(print_help_indented_scoped_meld)"
   }
 
   warn_usage_hint_delete_local_profit () {
@@ -625,18 +669,15 @@ update_local_from_canon () {
     if git status --porcelain=v1 -- "${local_file}" | grep -q -e "^??"; then
       warn " │   
                                       cd \"$(pwd -L)\"
-                                      command rm -f \"${local_file}\"
+                                      command rm \"${local_file}\"
                                       # Try again!
                                       $0"
 
       UPDEPS_CMD_RM_F_LIST+="${local_file} "
     else
-      # Erm, too provocative:
-      #   git commit -m \"Deps: Cleanse the unfaithful\"
       warn " │   
                                       cd \"$(pwd -L)\"
-                                      git rm -f \"${local_file}\"
-                                      git commit -m \"Deps: Decontaminate divergent files\"
+                                      command rm \"${local_file}\"
                                       # Try again!
                                       $0"
 
@@ -654,7 +695,7 @@ update_local_from_canon () {
     warn " │ - Take a look for yourself:"
     warn " │   
                                     cd \"$(pwd -L)\"
-                                    meld \"${local_file}\" \"${canon_file_absolute}\" &"
+                                    $(print_help_indented_scoped_meld)"
 
     warn_info_failing
   }
@@ -671,7 +712,7 @@ update_local_from_canon () {
                                     # The latest commit has no reference SHA:
                                     git --no-pager log --format=%B -n 1 -- \"${local_file}\"
                                     # The local file is tidy but differs from source:
-                                    meld \"${local_file}\" \"${canon_file_absolute}\" &"
+                                    $(print_help_indented_scoped_meld)"
 
     warn_info_failing
   }
@@ -686,7 +727,7 @@ update_local_from_canon () {
     warn " │   
                                     cd \"$(pwd -L)\"
                                     # The local file is tidy but differs from source:
-                                    meld \"${local_file}\" \"${canon_file_absolute}\" &"
+                                    $(print_help_indented_scoped_meld)"
 
     warn_info_failing
   }
@@ -855,6 +896,14 @@ stage_follower () {
     fi
     # else, remove-faithful-file ran git-rm.
 
+    if [ $? -ne 0 ]; then
+      # E.g., "fatal: pathspec 'foo/bar' is beyond a symbolic link".
+      >&2 error "ERROR: See message above: git-add failed"
+      >&2 error "  git add \"${local_file}\""
+
+      exit 1
+    fi
+
     # Cache the canon HEAD (it might already be cached, in which
     # case this recreates the cache file, with a new mod. date).
     cache_file_write "${canon_head}" "${canon_file_absolute}"
@@ -867,17 +916,18 @@ print_update_faithful_progress_info () {
   local local_file="$1"
   local what_happn="$2"
   local update_status="$3"
+  local action_preamble="$4"
 
   if [ -z "${update_status}" ]; then
     update_status="$(cache_file_read_update_status)"
   fi
 
-  local action_preamble=""
-
-  if ${update_status}; then
-    action_preamble="Follower file"
-  else
-    action_preamble="Would've been"
+  if [ -z "${action_preamble}" ]; then
+    if ${update_status}; then
+      action_preamble="Follower file"
+    else
+      action_preamble="Would've been"
+    fi
   fi
 
   info " ${action_preamble} $(font_emphasize "${what_happn}")" \
@@ -934,13 +984,13 @@ remove_faithful_file () {
     git rm -q "${local_file}"
   fi
 
-  # The calls below (print_canon_scoped_head and stage_follower) will only
+  # The calls below (print_scoped_head and stage_follower) will only
   # use the absolute file path to determine the absolute canon directory. I
   # know.
   local canon_fake_absolute="${canon_base_absolute}/ignored"
 
   local canon_head
-  canon_head="$(print_canon_scoped_head "${canon_fake_absolute}")"
+  canon_head="$(print_scoped_head "${canon_fake_absolute}")"
 
   stage_follower "${local_file}" "${canon_head}" "${canon_fake_absolute}" "${what_happn}"
 }
@@ -965,11 +1015,9 @@ render_document_from_template () {
   local canon_tmpl_absolute="${canon_base_absolute}/${canon_tmpl_relative}"
 
   local canon_head
-  canon_head="$(print_canon_scoped_head "${canon_tmpl_absolute}")"
+  canon_head="$(print_scoped_head "${canon_tmpl_absolute}")"
 
   insist_canon_head_consistent "${canon_head}" "${canon_tmpl_absolute}"
-
-  # ***
 
   if ! must_pass_checks_and_ensure_cache \
     "${canon_base_absolute}" "${canon_tmpl_absolute}" "${local_file}" \
@@ -980,45 +1028,53 @@ render_document_from_template () {
     return 1
   fi
 
-  # ***
+  ! report_done_if_symlink "${local_file}" \
+    || return 0
 
   # For UX purposes, so these few seconds happen at start of updates,
   # callers generally use update-faithful-begin to activate the venv,
   # and this call is a fallback in case they didn't.
   venv_activate_and_prepare
 
-  # ***
+  # Localize template sources.
 
-  # Not that jinja2 won't do process substitution (Bash's <(some-cmd) syntax),
-  # because `os.path.isfile(filename)` returns False on named pipes, e.g., on
-  # '/dev/fd/63' (Ref: `get_source` in jinja2/loaders.py). So use a temp file.
+  local tmp_source_dir
+  tmp_source_dir="$(mktemp -d -t ${UPDEPS_VENV_PREFIX}XXXX)"
 
-  local temp_tmpl="$(mktemp -t ${UPDEPS_VENV_PREFIX}XXXX)"
+  local tmp_tmpl_absolute="${tmp_source_dir}/${canon_tmpl_relative}"
 
-  canon_path_show_at_canon_head "${canon_tmpl_absolute}" "${canon_tmpl_relative}" "${canon_head}" \
-    > "${temp_tmpl}"
+  render_template_localize_sources \
+    "${tmp_source_dir}" "${tmp_tmpl_absolute}" \
+    "${canon_tmpl_absolute}" "${canon_tmpl_relative}" \
+    "${canon_head}" "${canon_base_absolute}" 
 
-  # ***
+  # Caller is responsible for generating and providing source data.
 
-  # Generate the source data JSON file.
+  local src_data_and_format=""
+  if [ -n "${UPDEPS_TMPL_SRC_DATA}" ]; then
+    # Meh: Not spaces-in-the-file-path strong.
+    src_data_and_format="${UPDEPS_TMPL_SRC_DATA} --format=${UPDEPS_TMPL_SRC_FORMAT:-json}"
+  else
+    warn "BWARE: No source data supplied. jinja2 will likely fail..."
+    warn "- Check that you passed a file path and format to update-faithful-begin"
+    warn "  or that you set UPDEPS_TMPL_SRC_DATA and maybe UPDEPS_TMPL_SRC_FORMAT"
+  fi
 
-  local src_data="$(mktemp -t ${UPDEPS_VENV_PREFIX}XXXX)"
-  local src_format="json"
-
-  print_tmpl_src_data "${canon_base_absolute}" > "${src_data}"
-
-  # ***
+  # Render the template.
 
   # E.g.,
   #   jinja2 helloworld.tmpl data.json --format=json
+  #
+  #  echo "jinja2 \"${canon_tmpl_relative}\" ${src_data_and_format} > \"${local_file}\""
+
   jinja2 \
-    "${temp_tmpl}" \
-    "${src_data}" \
-    --format=${src_format} \
+    "${tmp_tmpl_absolute}" \
+    ${src_data_and_format} \
       > "${local_file}"
 
-  command rm "${temp_tmpl}"
-  command rm "${src_data}"
+  command rm -rf "${tmp_source_dir}"
+
+  # ***
 
   apply_canon_permissions_to_follower "${local_file}" "${canon_tmpl_absolute}"
 
@@ -1034,56 +1090,144 @@ render_document_from_template () {
 
 # ***
 
-print_tmpl_src_data () {
-  local canon_base_absolute="$1"
+# Note that jinja1 won't do process substitution (Bash's <(some-cmd) syntax),
+# because `os.path.isfile(filename)` returns False on named pipes, e.g., on
+# '/dev/fd/62' (Ref: `get_source` in jinja2/loaders.py). So use a temp file
+# for the two inputs — template file, and source data — when generated at
+# runtime.
+# - To support {% extends <relative-path> %} tags, we'll use a temp directory
+#   and recreate the original file names and path (using scoped file versions
+#   per git-wise).
 
-  venv_install_yq
+render_template_localize_sources () {
+  local tmp_source_dir="$1"
+  local tmp_tmpl_absolute="$2"
+  local canon_tmpl_absolute="$3"
+  local canon_tmpl_relative="$4"
+  local canon_head="$5"
+  local canon_base_absolute="$6"
 
-  local project_name=""
-  local project_url=""
-  local coc_contact_email=""
+  local follower_head
+  follower_head="$(print_scoped_head)"
 
-  project_name="$(
-    tomlq -r .tool.poetry.name pyproject.toml
-  )"
-  project_url="$(
-    tomlq -r .tool.poetry.homepage pyproject.toml
-  )"
+  # Prefer local template, otherwise use canon's.
+  local chosen_tmpl_path="${canon_tmpl_absolute}"
+  local chosen_canon_head="${canon_head}"
 
-  # Fallback canon pyproject.toml for missing values.
-
-  coc_contact_email="$(
-    tomlq -r --exit-status .tool.git_update_faithful.coc_contact_email pyproject.toml
-  )"
-
-  if [ $? -ne 0 ]; then
-    coc_contact_email="$(
-      cd "${canon_base_absolute}"
-
-      tomlq -r .tool.git_update_faithful.coc_contact_email pyproject.toml
-    )"
+  if [ -f "${canon_tmpl_relative}" ]; then
+    chosen_tmpl_path="${canon_tmpl_relative}"
+    chosen_canon_head="${follower_head}"
   fi
 
-  echo "\
-{
-    \"project\": {
-        \"name\": \"${project_name}\",
-        \"url\": \"${project_url}\",
-        \"coc_contact_email\": \"${coc_contact_email}\"
-    }
-}"
+  command mkdir -p "$(dirname "${tmp_tmpl_absolute}")"
+
+  canon_path_show_at_canon_head \
+    "${chosen_tmpl_path}" \
+    "${canon_tmpl_relative}" \
+    "${chosen_canon_head}" \
+      > "${tmp_tmpl_absolute}"
+
+  print_progress_info_prepared_template "${canon_tmpl_relative}"
+
+  # Look for {% extends %} tags and make templates available locally.
+  # - Note that using an absolute path doesn't work, e.g.,
+  #   jinja2.exceptions.TemplateNotFound: /absolute/path/to/foo.tmpl
+  # - REFER: "The extends tag should be the first tag in the template."
+  #   https://jinja.palletsprojects.com/en/3.1.x/templates/#child-template
+
+  local prev_tmpl_absolute="${tmp_tmpl_absolute}"
+
+  local ascending=true
+
+  while ${ascending}; do
+    local child_tmpl_relative=""
+
+    local tmp_tmpl_header="$(head -1 "${prev_tmpl_absolute}")"
+    local extends_tag_maybe="$(
+      echo "${tmp_tmpl_header}" | sed "s/^{% *extends *['\"]\(.*\)['\"] %}\$/\1/"
+    )"
+
+    if [ "${tmp_tmpl_header}" != "${extends_tag_maybe}" ]; then
+      child_tmpl_relative="${extends_tag_maybe}"
+    fi
+
+    if [ -z "${child_tmpl_relative}" ]; then
+      ascending=false
+    else
+      local canon_child_absolute="${canon_base_absolute}/${child_tmpl_relative}"
+
+      local tmp_child_absolute="${tmp_source_dir}/${child_tmpl_relative}"
+
+      prev_tmpl_absolute="${tmp_child_absolute}"
+
+      # Prefer local template, otherwise use canon's.
+      local chosen_tmpl_path="${canon_child_absolute}"
+      local chosen_canon_head="${canon_head}"
+
+      if [ -f "${child_tmpl_relative}" ]; then
+        chosen_tmpl_path="${child_tmpl_relative}"
+        chosen_canon_head="${follower_head}"
+      fi
+
+      command mkdir -p "$(dirname "${tmp_child_absolute}")"
+
+      canon_path_show_at_canon_head \
+        "${chosen_tmpl_path}" \
+        "${child_tmpl_relative}" \
+        "${chosen_canon_head}" \
+          > "${tmp_child_absolute}"
+
+      print_progress_info_prepared_template "${child_tmpl_relative}"
+    fi
+  done
+}
+
+print_progress_info_prepared_template () {
+  local tmpl_relative="$1"
+  
+  local action_preamble="Template file"
+  local what_happn="prepared"
+
+  print_update_faithful_progress_info "${tmpl_relative}" "${what_happn}" \
+    "" "${action_preamble}"
 }
 
 # ***
 
 UPDEPS_VENV_PREFIX="update-faithful-venv-"
 
+UPDEPS_VENV_FORCE=${UPDEPS_VENV_FORCE:-false}
+
 venv_activate_and_prepare () {
+  local is_beginning=${1:-false}
+
+  local cmd_name="jinja2"
+
   # If Python environment looks like one we created, we're good.
   if python -c "import sys; sys.stdout.write(sys.prefix)" \
     | grep -q -e "${UPDEPS_VENV_PREFIX}" \
   ; then
+    if ${is_beginning}; then
+      info "Our Python venv verified"
+    fi
+
+    if ! (_upful_insist_cmd "${cmd_name}" 2> /dev/null); then
+      >&2 echo "ERROR: Unexpected path: Our venv, but no ‘${cmd_name}’?"
+
+      exit 1
+    fi
+
     return 0
+  fi
+
+  if ! ${UPDEPS_VENV_FORCE}; then
+    if (_upful_insist_cmd "${cmd_name}" 2> /dev/null); then
+      if ${is_beginning}; then
+        info "Using local $(font_emphasize "${cmd_name}") 💨"
+      fi
+
+      return 0
+    fi
   fi
 
   printf "%s" "Creating Python venv..."
@@ -1094,12 +1238,15 @@ venv_activate_and_prepare () {
 
   printf "\r"
   info "Activated Python venv"
+  debug "  └→ HINT: Avoid this wait with your own venv, and:"
+  debug "           pip install jinja2-cli"
 }
 
 # REFER: https://gist.github.com/cupdike/6a9caaf18f30250364c8fcf6d64ff22e
 # - BEGET: https://gist.github.com/csinchok/9714005
 venv_activate () {
-  local throwaway_dir=$(mktemp -d -t ${UPDEPS_VENV_PREFIX}XXXX)
+  local throwaway_dir
+  throwaway_dir=$(mktemp -d -t ${UPDEPS_VENV_PREFIX}XXXX)
 
   cd "${throwaway_dir}"
 
@@ -1156,13 +1303,6 @@ venv_install_jinja2_cli () {
   #   python -m pip install jinja2-cli
 }
 
-# CXREF: `tomlq` from `yq`, a YAML/XML/TOML jq wrapper.
-#   https://github.com/kislyuk/yq
-#   https://kislyuk.github.io/yq/
-venv_install_yq () {
-  pip install -q yq
-}
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
 # It's not necessary to call this function, unless you
@@ -1172,7 +1312,9 @@ venv_install_yq () {
 # call sets up the venv.
 update-faithful-begin () {
   local canon_base_absolute="${1:-UPDEPS_CANON_BASE_ABSOLUTE}"
-  local skip_venv_activate="${2:-false}"
+  local skip_venv_manage="${2:-false}"
+  local tmpl_src_data="${3:-${UPDEPS_TMPL_SRC_DATA}}"
+  local tmpl_src_format="${4:-${UPDEPS_TMPL_SRC_FORMAT}}"
 
   if [ -n "${canon_base_absolute}" ]; then
     UPDEPS_CANON_BASE_ABSOLUTE="${canon_base_absolute:-/}"
@@ -1180,9 +1322,14 @@ update-faithful-begin () {
 
   must_pass_checks_and_ensure_cache "${UPDEPS_CANON_BASE_ABSOLUTE}" "" ""
 
-  if ! ${skip_venv_activate}; then
-    venv_activate_and_prepare
+  if ! ${skip_venv_manage}; then
+    local is_beginning=true
+
+    venv_activate_and_prepare ${is_beginning}
   fi
+
+  UPDEPS_TMPL_SRC_DATA="${tmpl_src_data}"
+  UPDEPS_TMPL_SRC_FORMAT="${tmpl_src_format}"
 }
 
 # ***
@@ -1193,6 +1340,8 @@ update-faithful-finish () {
 
 update_faithful_finish () {
   local sourcerer="$1"
+  local skip_venv_manage="${2:-false}"
+  local commit_subject="$3"
 
   if ! cache_file_nonempty; then
     cache_file_cleanup
@@ -1211,7 +1360,8 @@ update_faithful_finish () {
       update_faithfuls_commit_changes \
         "${cached_head}" \
         "${canon_base_absolute}" \
-        "${sourcerer}"
+        "${sourcerer}" \
+        "${commit_subject}"
 
       info
       info "└── Finished update-faithful operation ─── Changes committed!"
@@ -1231,16 +1381,11 @@ update_faithful_finish () {
       local cleanup_git_cpyst""
       if test -n "${UPDEPS_CMD_RM_F_LIST}"; then
         cleanup_cmd_cpyst="
-                                      command rm -f ${UPDEPS_CMD_RM_F_LIST}"
+                                      command rm ${UPDEPS_CMD_RM_F_LIST}"
       fi
       if test -n "${UPDEPS_GIT_RM_F_LIST}"; then
         cleanup_git_cpyst="
-                                      git rm -f ${UPDEPS_GIT_RM_F_LIST}
-                                      # Optional: git-commit. Or just run update-faithful next.
-                                      printf \"%s\\\n\\\n%s\" \\
-                                        \"Deps: Temporarily expunge divergent faithfuls\" \\
-                                        \"- These files will be restored in the next commit.\" \\
-                                        | git commit -F -"
+                                      command rm ${UPDEPS_GIT_RM_F_LIST}"
       fi
       info
       info "    - If you wanna just replace all the conflicts, eh:
@@ -1251,7 +1396,9 @@ update_faithful_finish () {
     fi
   fi
 
-  venv_deactivate
+  if ! ${skip_venv_manage}; then
+    venv_deactivate
+  fi
 
   cache_file_cleanup
 }
@@ -1262,6 +1409,13 @@ update_faithfuls_commit_changes () {
   local cached_head="$1"
   local canon_base_absolute="$2"
   local sourcerer="$3"
+  local commit_subject="$4"
+
+  local canon_project="$(basename "${canon_base_absolute}")"
+
+  if [ -z "${commit_subject}" ]; then
+    commit_subject="${UPDEPS_GENERIC_COMMIT_SUBJECT} <${canon_project}>"
+  fi
 
   local sourcery=""
   if [ -n "${sourcerer}" ]; then
@@ -1273,9 +1427,9 @@ update_faithfuls_commit_changes () {
   fi
 
   echo "\
-Deps: Update faithfuls
+${commit_subject}
 
-- Source: $(basename "${canon_base_absolute}") @ ${cached_head}
+- Source: ${canon_project} @ $(git_sha_shorten "${cached_head}")
 
 - Commit generated by:
 
@@ -1332,5 +1486,4 @@ main () {
 main "$@"
 unset -f main
 unset -f source_deps
-unset -f insist_cmd
 
