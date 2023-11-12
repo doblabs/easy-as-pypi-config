@@ -36,11 +36,11 @@ class TestWriteConfigFile(object):
 
 # ***
 
+
 class TestGetConfigInstance(object):
+    EASY_AS_PYPI_CONFIG_CONFIGFILE_ENVKEY = "EAPPCONF_CONFIGFILE"
 
-    EASY_AS_PYPI_CONFIG_CONFIGFILE_ENVKEY = 'EAPPCONF_CONFIGFILE'
-
-    EASY_AS_PYPI_CONFIG_CONFIGFILE_BASENAME = 'easy-as-pypi-tests.conf'
+    EASY_AS_PYPI_CONFIG_CONFIGFILE_BASENAME = "easy-as-pypi-tests.conf"
 
     @pytest.fixture(autouse=True)
     def register_application(self, app_name):
@@ -87,8 +87,8 @@ class TestGetConfigInstance(object):
         configurable = self.get_configurable()
         configurable.load_config(configfile_path=config_obj.filename)
         # Assert that the written config was read.
-        cfg_val = configurable.config_root['foo']['bar']
-        assert cfg_val == config_obj['foo']['bar']
+        cfg_val = configurable.config_root["foo"]["bar"]
+        assert cfg_val == config_obj["foo"]["bar"]
         assert config_obj is not configurable.config_root
 
     # ***
@@ -96,7 +96,7 @@ class TestGetConfigInstance(object):
     def test_config_path_getter(self, tmp_appdirs, mocker):
         """Make sure the config target path is constructed to our expectations."""
         # Note that tmp_appdirs included so default_config_path uses /tmp.
-        mocker.patch('easy_as_pypi_config.fileboss.load_config_obj')
+        mocker.patch("easy_as_pypi_config.fileboss.load_config_obj")
         configurable = self.get_configurable()
         configurable.load_config(configfile_path=None)
         expectation = os.path.join(
@@ -123,13 +123,13 @@ class TestGetConfigInstance(object):
 
     def test_find_all_okay(self):
         configurable = self.get_configurable()
-        all_found = configurable.find_all(['foo'])
-        assert all_found[0] is configurable.config_root['foo']
+        all_found = configurable.find_all(["foo"])
+        assert all_found[0] is configurable.config_root["foo"]
 
     def test_find_all_fail(self):
         configurable = self.get_configurable()
         with pytest.raises(KeyError):
-            configurable.find_all(['foo2'])
+            configurable.find_all(["foo2"])
 
     # ***
 
@@ -166,9 +166,12 @@ class TestGetConfigInstance(object):
 
     def test_load_config_via_environ(self, basic_config_file, mocker):
         configfile_path = basic_config_file
-        mocker.patch.dict(os.environ, {
-            self.EASY_AS_PYPI_CONFIG_CONFIGFILE_ENVKEY: configfile_path,
-        })
+        mocker.patch.dict(
+            os.environ,
+            {
+                self.EASY_AS_PYPI_CONFIG_CONFIGFILE_ENVKEY: configfile_path,
+            },
+        )
         configurable = self.get_configurable()
         configurable.load_config(configfile_path=None)
         assert configurable.cfgfile_exists
@@ -184,13 +187,13 @@ class TestGetConfigInstance(object):
 
     def test_inject_from_cli_okay(self):
         configurable = self.get_configurable()
-        configurable.inject_from_cli('foo.bar=123')
-        assert configurable.config_root['foo']['bar'] == '123'
+        configurable.inject_from_cli("foo.bar=123")
+        assert configurable.config_root["foo"]["bar"] == "123"
 
     def test_inject_from_cli_fail(self, capsys):
         configurable = self.get_configurable()
         with pytest.raises(SystemExit):
-            configurable.inject_from_cli('foo.bar=123', 'quux.qiix=foo')
+            configurable.inject_from_cli("foo.bar=123", "quux.qiix=foo")
         out, err = capsys.readouterr()
         assert not out and err
 
@@ -217,5 +220,5 @@ class TestGetConfigInstance(object):
 
     # ***
 
-# ***
 
+# ***

@@ -18,7 +18,7 @@ def config_instance(tmpdir):
         # NOPE: You'd overwrite your user's file with the default path:
         #   from easy_as_pypi_config.fileboss import default_config_path
         #   configfile_path = default_config_path()
-        configfile_path = os.path.join(tmpdir, 'easy-as-pypi-config-test.conf')
+        configfile_path = os.path.join(tmpdir, "easy-as-pypi-config-test.conf")
         config = ConfigObj(configfile_path)
         config.merge(cfg_dict)
         return config
@@ -27,8 +27,8 @@ def config_instance(tmpdir):
 
     def generate_dict():
         cfg_dict = {
-            'foo' : {
-                'bar': 'baz',
+            "foo": {
+                "bar": "baz",
             },
         }
 
@@ -37,4 +37,3 @@ def config_instance(tmpdir):
     # ***
 
     return generate_config
-

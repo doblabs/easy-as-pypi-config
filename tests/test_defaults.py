@@ -10,4 +10,3 @@ from easy_as_pypi_config.defaults import register_conf_filename
 def test_register_conf_filename(filename):
     register_conf_filename(filename)
     assert defaults.conf_filename == filename
-

@@ -9,25 +9,19 @@ import pytest
 
 pytest_plugins = (
     # *** External fixtures.
-
     # Import tmp_appdirs fixture.
-    'easy_as_pypi_appdirs.tests.appdirs_mock',
-
+    "easy_as_pypi_appdirs.tests.appdirs_mock",
     # *** Published fixtures.
-
     # Import fixtures: filename, filepath.
-    'easy_as_pypi_config.tests.file_fakes',
-
+    "easy_as_pypi_config.tests.file_fakes",
     # *** Internal fixtures.
-
     # Import config_instance fixture.
-    'tests.fixtures.config_instance',
+    "tests.fixtures.config_instance",
     # Import config_root fixture.
-    'tests.fixtures.config_root',
+    "tests.fixtures.config_root",
 )
 
 
 @pytest.fixture
 def app_name():
-    return 'easy-as-pypi-config-tests'
-
+    return "easy-as-pypi-config-tests"

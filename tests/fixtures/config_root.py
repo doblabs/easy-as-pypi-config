@@ -9,25 +9,23 @@ from config_decorator import section
 
 @pytest.fixture
 def basic_config_root():
-
     @section(None)
     class ConfigRoot(object):
         pass
 
-    @ConfigRoot.section('foo')
+    @ConfigRoot.section("foo")
     class ConfigurableFoo(object):
-
         @property
         @ConfigRoot.setting("foo.bar option")
         def bar(self):
-            return ''
+            return ""
 
         @property
         @ConfigRoot.setting("hidden option", hidden=True)
         def boo(self):
-            return ''
+            return ""
 
-    @ConfigRoot.section('baz')
+    @ConfigRoot.section("baz")
     class ConfigurableBaz(object):
         pass
 
@@ -36,7 +34,7 @@ def basic_config_root():
 
 @pytest.fixture()
 def basic_config_file(filepath):
-    with open(filepath, 'w') as conf_file:
+    with open(filepath, "w") as conf_file:
         conf_file.write(
             """
 [foo]
@@ -48,4 +46,3 @@ qiix = 'foo'
 """.lstrip()
         )
     return filepath
-
