@@ -20,6 +20,14 @@ easy\_as\_pypi\_config.defaults module
    :undoc-members:
    :show-inheritance:
 
+easy\_as\_pypi\_config.echo\_cfg module
+---------------------------------------
+
+.. automodule:: easy_as_pypi_config.echo_cfg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 easy\_as\_pypi\_config.fileboss module
 --------------------------------------
 
