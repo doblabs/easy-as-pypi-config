@@ -5,12 +5,12 @@
 
 import os
 import pathlib
+from unittest.mock import MagicMock
 
 import pytest
 from config_decorator import KeyChainedValue
 from easy_as_pypi_appdirs import register_application
 
-from easy_as_pypi_config import fileboss
 from easy_as_pypi_config.defaults import register_conf_filename
 from easy_as_pypi_config.fileboss import write_config_obj
 from easy_as_pypi_config.urable import ConfigUrable
@@ -96,14 +96,28 @@ class TestGetConfigInstance(object):
     def test_config_path_getter(self, tmp_appdirs, mocker):
         """Make sure the config target path is constructed to our expectations."""
         # Note that tmp_appdirs included so default_config_path uses /tmp.
-        mocker.patch("easy_as_pypi_config.fileboss.load_config_obj")
+
+        # DUNNO/2023-11-13: Works in Python 3.8-3.11:
+        #     mocker.patch("easy_as_pypi_config.fileboss.load_config_obj")
+        #     ...
+        #     assert fileboss.load_config_obj.called_with(expectation)
+        # - Python 3.12 changes called_with to assert_called_with.
+        # - But also in Python 3.12 the mock no longer works, and rightfully
+        #   so: urable.py imports load_config_obj at file-level, so by the
+        #   time this test tries to patch fileboss, urable.py already has a
+        #   direct reference to the function, so the mock doesn't get used.
+        # - Whatever. We'll just mock the ConfigUrable object... which feels
+        #   a little sloppy, but now 3.12 tests pass, so, profit.
+
         configurable = self.get_configurable()
+        configurable._load_config_obj = MagicMock()
         configurable.load_config(configfile_path=None)
         expectation = os.path.join(
             tmp_appdirs.user_config_dir,
             self.EASY_AS_PYPI_CONFIG_CONFIGFILE_BASENAME,
         )
-        assert fileboss.load_config_obj.called_with(expectation)
+
+        configurable._load_config_obj.assert_called_with(expectation)
 
     # ***
 

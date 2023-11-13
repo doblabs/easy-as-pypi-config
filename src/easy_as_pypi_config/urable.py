@@ -32,6 +32,8 @@ class ConfigUrable(object):
         self._latest_errs = {}
         self._unrestricted = unrestricted
         self._unstructured = {}
+        #
+        self._load_config_obj = load_config_obj
 
     # ***
 
@@ -96,7 +98,7 @@ class ConfigUrable(object):
         def _load_configfile():
             self.configfile_path = _resolve_configfile_path(configfile_path)
             cfgfile_exists = os.path.exists(self.config_path)
-            config_obj = load_config_obj(self.config_path)
+            config_obj = self._load_config_obj(self.config_path)
             self.config_root.forget_config_values()
             errs = _consume_config_obj_and_warn_if_smelly(config_obj)
             warn_if_smelly_config(errs)
@@ -160,7 +162,7 @@ class ConfigUrable(object):
     # ***
 
     def reset_config(self):
-        config_obj = load_config_obj(self.config_path)
+        config_obj = self._load_config_obj(self.config_path)
         # Fill in dict object using Config defaults.
         self.config_root.forget_config_values()
         self.config_root.apply_items(config_obj, use_defaults=True)
@@ -170,7 +172,7 @@ class ConfigUrable(object):
     # ***
 
     def write_config(self, skip_unset=False):
-        config_obj = load_config_obj(self.config_path)
+        config_obj = self._load_config_obj(self.config_path)
         # - (lb): If we did not want to use skip_unset, which won't pollute
         #   the config_obj that was just read from the user's config, we
         #   could similarly delete entries from the config, e.g.,
