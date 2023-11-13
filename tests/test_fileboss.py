@@ -244,10 +244,10 @@ def simple_config_dict():
 
 @pytest.fixture()
 def invalid_config_obj(filepath):
-    # What looks like Russian characters (I'd guess) from
+    # REFER/2020-12-14: What looks like Russian characters (I'd guess) from:
     #   https://stackoverflow.com/questions/32208421/
     #     ascii-codec-error-when-writing-configobj
-    # The \u2018 is just a fancy curly ‘.
+    # - The \u2018 is just a fancy curly ‘.
     with open(filepath, "w") as conf_file:
         conf_file.write(
             """
