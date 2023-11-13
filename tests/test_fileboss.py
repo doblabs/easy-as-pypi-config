@@ -39,7 +39,8 @@ class TestGetConfigInstance(object):
     def test_default_config_path_abbrev(self, mocker, tmpdir, tmp_appdirs):
         mocker.patch("pathlib.Path.home", return_value=tmpdir)
         tmpdir_with_final_sep = os.path.join(tmpdir, "")
-        match_leading_path = r"^{}".format(tmpdir_with_final_sep)
+        # Escape input in case Windows path, e.g., "^C:\Users\runneradmin\...\".
+        match_leading_path = r"^{}".format(re.escape(tmpdir_with_final_sep))
         app_dir_file = re.sub(match_leading_path, "", tmp_appdirs.user_config_dir)
         abbreved = default_config_path_abbrev()
         assert abbreved == os.path.join("~", app_dir_file, defaults.conf_filename)

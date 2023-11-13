@@ -42,7 +42,9 @@ def default_config_path():
 def default_config_path_abbrev():
     # Path.home() is Python 3.5+. See os.path.expanduser('~') for older Python.
     user_home = str(Path.home())
-    abbrev_path = re.sub(r"^{}".format(user_home), "~", default_config_path())
+    # Escape input in case Windows path, e.g., "^C:\Users\runneradmin\...\".
+    sanitized = re.escape(user_home)
+    abbrev_path = re.sub(r"^{}".format(sanitized), "~", default_config_path())
     return abbrev_path
 
 
