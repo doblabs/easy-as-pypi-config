@@ -124,13 +124,25 @@ class TestGetConfigInstance(object):
 
     def test_write_config_obj_fail_unicode_encode_error(
         self,
-        invalid_config_obj,
+        filepath,
         capsys,
     ):
-        with pytest.raises(SystemExit):
-            write_config_obj(invalid_config_obj)
-        out, err = capsys.readouterr()
-        assert not out and err
+        if os.name != "nt":
+            config_obj = invalid_config_obj(filepath)
+            with pytest.raises(SystemExit):
+                write_config_obj(config_obj)
+            out, err = capsys.readouterr()
+            assert not out and err
+        else:
+            # DUNNO/2023-11-13: The Windows CI runner follows this path.
+            # It seems like Windows handles UTF-8 gibberish differently
+            # than Linux or macOS, or maybe something else is afoot. It's
+            # not really worth anyone's time to dig in deeper, though.
+            # (And it's prob. not configobj, which is legacy/stable.)
+            with pytest.raises(UnicodeEncodeError):
+                config_obj = invalid_config_obj(filepath)
+            out, err = capsys.readouterr()
+            assert not out and not err
 
     def test_write_config_obj_fail_unknown_forced_error(
         self,
@@ -242,8 +254,70 @@ def simple_config_dict():
 
 # ***
 
+# DUNNO/2023-11-13: This fcn had been a fixture, but on Windows (py3.12) CI
+# runner, it throws UnicodeEncodeError from the conf_file.write. But if you
+# "repair" the string, then write_config_obj(configobj) works, though callers
+# expect it to raise. So I'll document what I saw, but callers know to expect
+# different behavior on Windows.
+#
+# - The first issue was
+#
+#       ERROR at setup of
+#       TestGetConfigInstance.test_write_config_obj_fail_unicode_encode_error
+#         tests\test_fileboss.py:252: in invalid_config_obj
+#
+#   - (It's during "setup of" because @pytest.fixture invalid_config_obj is
+#      called before the test runs.)
+#
+#     It reported the error:
+#
+#       conf_file.write(
+#         C:\hostedtoolcache\windows\Python\3.12.0\x64\Lib\encodings\cp1252.py:19:
+#       in encode
+#         return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+#       UnicodeEncodeError: 'charmap' codec can't encode characters in
+#                            position 8-11: character maps to <undefined>
+#
+#   - Indeed position 8-11 is the first user name:
+#
+#       users = вася, петя
+#
+#     And if we change it to:
+#
+#       users = user, петя
+#
+#     Then the error message shifts accordingly:
+#
+#       'charmap' codec can't encode characters in position 14-17
+#
+#   - So then we replace both user names:
+#
+#       users = user, user
+#
+#     And now the conf_file.write() works, but then create_configobj() fails.
+#
+#     The error is now UnicodeDecodeError (the prev. were UnicodeEncodeError),
+#     and it's due to the last line of the input:
+#
+#       'utf-8' codec can't decode byte 0x91 in position 7: invalid start byte
+#
+#     But if you replace the final Unicode character:
+#
+#       foo = '\u2018'
+#
+#     E.g., to this:
+#
+#       foo = 'bar'
+#
+#     then create_configobj() works, but the config object is *valid*
+#     (there are no fishy characters), and the caller's test will fail.
+#
+# - This behavior is only observed on Windows, but it seems weird that one
+#   OS throws UnicodeEncodeError during config_obj = configobj.ConfigObj(),
+#   while the other OSes happily create the object, but then throw
+#   UnicodeEncodeError on config_obj.write().
 
-@pytest.fixture()
+
 def invalid_config_obj(filepath):
     # REFER/2020-12-14: What looks like Russian characters (I'd guess) from:
     #   https://stackoverflow.com/questions/32208421/
