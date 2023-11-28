@@ -328,7 +328,7 @@ make_pyproject_prerelease () {
 
   awk ' \
     match($0, /^('${concat_pjs}')\s*=\s*"([<>=^]{1,2}\s*[0-9]+[^"]*)"/, matches) { \
-      print matches[1] " = { version = \"" matches[2] "\", source = "testpypi" }"; \
+      print matches[1] " = { version = \"" matches[2] "\", source = \"testpypi\" }"; \
       next; \
     } 1 \
   ' "pyproject.toml" >> "${PYPROJECT_PRERELEASE_DIR}/pyproject.toml"
