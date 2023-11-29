@@ -15,17 +15,17 @@ make_develop () {
   _pyenv_prepare_shell "${VENV_PYVER}"
 
   local VENV_CREATED=false
-  _venv_manage_and_activate "${VENV_NAME}" "${VENV_ARGS}" "${VENV_NAME}"
+  _venv_manage_and_activate "${VENV_NAME}" "${VENV_ARGS}" "" "${VENV_NAME}"
 
   if ${VENV_CREATED} || ${VENV_FORCE:-false} ; then
     command rm -f ${EDITABLE_DIR}/poetry.lock
 
     # MAYBE: Also move pip installs herein and skip if VENV_CREATED already?
     #
-    #   _venv_install_pip_setuptools_poetry_and_poetry_dynamic_versioning_plugin
+    #   _install_poetry_and_plugins
   fi
 
-  _venv_install_pip_setuptools_poetry_and_poetry_dynamic_versioning_plugin
+  _install_poetry_and_plugins
 
   # Don't assume user's pyproject.toml's poetry.group's match ours.
   local install_with="${PO_INSTALL_WITH}"
@@ -73,7 +73,7 @@ make_doc8_pip () {
   _pyenv_prepare_shell "${VENV_PYVER}"
 
   # local VENV_CREATED=false
-  _venv_manage_and_activate "${VENV_DOC8}" "" "${VENV_NAME}"
+  _venv_manage_and_activate "${VENV_DOC8}" "" "" "${VENV_NAME}"
 
   python -c "import doc8" 2> /dev/null \
     || pip install -U pip "doc8>=1.1.1"
@@ -98,9 +98,9 @@ make_doc8_poetry () {
   local VENV_DOC8=".venv"
 
   # local VENV_CREATED=false
-  _venv_manage_and_activate "${VENV_DOC8}" "" ""
+  _venv_manage_and_activate "${VENV_DOC8}" "" "" ""
 
-  _venv_install_pip_setuptools_poetry_and_poetry_dynamic_versioning_plugin
+  _install_poetry_and_plugins
 
   poetry install --no-interaction --no-root --with dev
 
@@ -137,11 +137,11 @@ make_docs_html () {
   _pyenv_prepare_shell "${VENV_PYVER}"
 
   local VENV_CREATED=false
-  _venv_manage_and_activate "${VENV_DOCS}" "" "${VENV_NAME}"
+  _venv_manage_and_activate "${VENV_DOCS}" "" "" "${VENV_NAME}"
 
   # E.g., `VENV_FORCE=true make docs`.
   if ${VENV_CREATED} || ${VENV_FORCE:-false} ; then
-    _venv_install_pip_setuptools_poetry_and_poetry_dynamic_versioning_plugin
+    _install_poetry_and_plugins
 
     local install_with="--with docs"
 
@@ -290,11 +290,99 @@ make_editable () {
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
+install_release () {
+  local PACKAGE_NAME="$1"
+  local VENV_ARGS="$2"
+
+  local workon_home="${WORKON_HOME:-${HOME}/.virtualenvs}"
+
+  poetry_install_to_venv "${PACKAGE_NAME}" "${workon_home}" "${VENV_ARGS}"
+}
+
+poetry_install_to_venv () {
+  local venv_name="$1"
+  local venv_home="${2:-.}"
+  local venv_args="$3"
+  local venv_default="$4"
+  local pyproject_dir="${5:-.}"
+
+  eval "$($(which pyenv) init -)"
+
+  # Ensure make-install uses default Python version.
+  pyenv shell --unset
+
+  _venv_manage_and_activate \
+    "${venv_name}" "${venv_args}" "${venv_home}" "${venv_default}"
+
+  # ***
+
+  local verbose=true
+
+  _install_poetry_and_plugins ${verbose}
+
+  # ***
+
+  echo
+  echo "poetry -C ${pyproject_dir}" install
+  poetry -C "${pyproject_dir}" install
+
+  # ***
+
+  echo
+  echo "Ready to rock:"
+  echo "  . ${venv_home}/${venv_name}/bin/activate"
+  echo "Or if using virtualenvwrapper:"
+  echo "  workon ${venv_name}"
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
 install_prerelease () {
+  local VENV_NAME_PRERELEASE="$1"
+  local VENV_ARGS="$2"
+  local VENV_NAME="$3"
+  local PYPROJECT_PRERELEASE_DIR="$4"
+  local EDITABLE_PJS="$5"
+
+  prepare_poetry_prerelease "${PYPROJECT_PRERELEASE_DIR}" "${EDITABLE_PJS}"
+
+  local venv_name="${VENV_NAME_PRERELEASE}"
+  # Prefer local venv, especially because venv space adds up, and users
+  # likely to see all the .venv-*'s in the project directory than to
+  # remember to clean out ~/.virtualenvs occasionally.
+  local venv_home="${VENV_NAME_PRERELEASE:-${WORKON_HOME:-${HOME}/.virtualenvs}}"
+  local venv_default="${VENV_NAME}"
+
+  poetry_install_to_venv \
+    "${venv_name}" "${venv_home}" "${VENV_ARGS}" "${venv_default}" \
+    "${PYPROJECT_PRERELEASE_DIR}"
+}
+
+prepare_poetry_prerelease () {
   local PYPROJECT_PRERELEASE_DIR="$1"
   local EDITABLE_PJS="$2"
 
+  # This fcn clobbery (of <dir>/pyproject.toml and <dir>/poetry.lock).
+
+  # Check pre-release dir not project dir, so we don't clobber canon.
+  if [ "." -ef "${PYPROJECT_PRERELEASE_DIR}" ]; then
+    # This is a dev error :wink:.
+    >&2 echo "ERROR: prepare-poetry-prerelease requires offshore pre-re dir"
+
+    exit 1
+  fi
+
+  # Clobber <dir>/pyproject.toml
   make_pyproject_prerelease "${PYPROJECT_PRERELEASE_DIR}" "${EDITABLE_PJS}"
+
+  # Clobber <dir>/poetry.lock
+  command cp "poetry.lock" "${PYPROJECT_PRERELEASE_DIR}/poetry.lock"
+
+  poetry -C "${PYPROJECT_PRERELEASE_DIR}" lock --no-update
+
+  # Stay consistent with the main project poetry.lock, but update
+  # "our" deps to their latest, possibly pre-release versions.
+  poetry -C "${PYPROJECT_PRERELEASE_DIR}" update --lock ${EDITABLE_PJS}
 }
 
 make_pyproject_prerelease () {
@@ -324,7 +412,7 @@ make_pyproject_prerelease () {
   # Convert our deps from, e.g., this:
   #   easy-as-pypi-appdirs = "^1.1.1"
   # to this:
-  #   easy-as-pypi-appdirs = {version = "^1.1.1", source = "testpypi"}
+  #   easy-as-pypi-appdirs = { version = "^1.1.1", source = "testpypi" }
 
   awk ' \
     match($0, /^('${concat_pjs}')\s*=\s*"([<>=^]{1,2}\s*[0-9]+[^"]*)"/, matches) { \
@@ -462,25 +550,65 @@ _pyenv_prepare_shell () {
 _venv_manage_and_activate () {
   local venv_name="$1"
   local venv_args="$2"
+  local venv_home="${3:-.}"
+  local venv_default="$4"
+
+  # Assumes caller calls us from project root.
+  local project_dir="$(pwd)"
+
+  mkdir -p "${venv_home}"
+
+  (
+    cd "${venv_home}"
+
+    _venv_create_and_metaize \
+      "${venv_name}" "${venv_args}" "${venv_default}" "${project_dir}"
+  )
+
+  . "${venv_home}/${venv_name}/bin/activate"
+}
+
+_venv_create_and_metaize () {
+  local venv_name="$1"
+  local venv_args="$2"
   local venv_default="$3"
+  local project_dir="$4"
 
   if [ ! -d "${venv_name}" ]; then
     python3 -m venv ${venv_args} "${venv_name}"
 
     VENV_CREATED=true
 
+    # Set crumb used by `cdproject` command.
+    # - USYNC: VIRTUALENVWRAPPER_PROJECT_FILENAME=".project"
+    # - CXREF: https://github.com/landonb/virtualenvwrapper
+    #   https://github.com/python-virtualenvwrapper/virtualenvwrapper
+    echo "${project_dir}" > "${venv_name}/.project"
+
     if [ -d "${venv_default}" ]; then
       # So that bare `workon` picks the `make develop` virtualenv.
+      # - CXREF: https://github.com/landonb/virtualenvwrapper
+      #   (Unique to my fork)
       touch "${venv_default}/bin/activate"
     fi
   fi
-
-  . "${venv_name}/bin/activate"
 }
 
-_venv_install_pip_setuptools_poetry_and_poetry_dynamic_versioning_plugin () {
+_install_poetry_and_plugins () {
+  local verbose="${1:-false}"
+
+  _echo () { ${verbose} || return 0; echo "$@"; }
+
+  _echo
+  _echo "pip install -U pip setuptools"
   pip install -U pip setuptools
+
+  _echo
+  _echo "pip install poetry"
   pip install poetry
+
+  _echo
+  _echo "poetry self add 'poetry-dynamic-versioning[plugin]'"
   poetry self add "poetry-dynamic-versioning[plugin]"
 }
 

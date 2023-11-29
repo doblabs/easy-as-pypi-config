@@ -64,6 +64,8 @@ PYPROJECT_DOC8_DIR ?= .pyproject-doc8
 
 PYPROJECT_PRERELEASE_DIR ?= .pyproject-prerelease
 
+VENV_NAME_PRERELEASE ?= .venv-alpha
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
 # `make docs` docs/ subdir HTML target, e.g.,
@@ -457,41 +459,8 @@ release: publish
 #  .ONESHELL:
 
 install: _warn_unless_virtualenvwrapper
-	eval "$$($$(which pyenv) init -)"; \
-	pyenv shell --unset; \
-	\
-	project_dir="$$(pwd)"; \
-	workon_home="$${WORKON_HOME:-$${HOME}/.virtualenvs}"; \
-	mkdir -p "$${workon_home}"; \
-	cd "$${workon_home}"; \
-	if [ ! -d "$(PACKAGE_NAME)" ]; then \
-		python3 -m venv $(VENV_ARGS) "$(PACKAGE_NAME)"; \
-		echo "$${project_dir}" > "$(PACKAGE_NAME)/.project"; \
-	fi; \
-	. "$(PACKAGE_NAME)/bin/activate"; \
-	cd "$${project_dir}"; \
-	\
-	echo; \
-	echo "pip install -U pip setuptools"; \
-	pip install -U pip setuptools; \
-	\
-	echo; \
-	echo "pip install poetry"; \
-	pip install poetry; \
-	\
-	echo; \
-	echo "poetry self add 'poetry-dynamic-versioning[plugin]'"; \
-	poetry self add "poetry-dynamic-versioning[plugin]"; \
-	\
-	echo; \
-	echo "poetry install"; \
-	poetry install; \
-	\
-	echo; \
-	echo "Ready to rock:"; \
-	echo "  . $${workon_home}/$(PACKAGE_NAME)/bin/activate"; \
-	echo "Or if using virtualenvwrapper:"; \
-	echo "  workon $(PACKAGE_NAME)";
+	@. "$(MAKETASKS_SH)" && \
+		install_release "$(PACKAGE_NAME)" "$(VENV_ARGS)"
 .PHONY: install
 
 # Aka uninstall, sorta.
@@ -516,8 +485,20 @@ _warn_unless_virtualenvwrapper:
 
 install-prerelease:
 	@. "$(MAKETASKS_SH)" && \
-		install_prerelease "$(PYPROJECT_PRERELEASE_DIR)" "$(EDITABLE_PJS)"
+		install_prerelease \
+			"$(VENV_NAME_PRERELEASE)" \
+			"$(VENV_ARGS)" \
+			"$(VENV_NAME)" \
+			"$(PYPROJECT_PRERELEASE_DIR)" \
+			"$(EDITABLE_PJS)"
 .PHONY: install-prerelease
+
+prepare-poetry-prerelease:
+	@. "$(MAKETASKS_SH)" && \
+		prepare_poetry_prerelease \
+			"$(PYPROJECT_PRERELEASE_DIR)" \
+			"$(EDITABLE_PJS)"
+.PHONY: prepare-poetry-prerelease
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 
