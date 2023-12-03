@@ -88,6 +88,9 @@ wrangle_tags () {
   # CRUDE: Set tag_names array.
   set_tag_locals ""
 
+  local GIT_PUSH_OUTPUT_DUMP
+  GIT_PUSH_OUTPUT_DUMP="$(mktemp -t wrangle-tags-XXXXX)"
+
   trace_full
 
   trace_lite "┌─ CI Wrangler: tag-name: ────┬─🥚─┬─ new-val: ─┬─ output-name and val: ────────────┐"
@@ -119,13 +122,32 @@ wrangle_tags () {
 
   local footer_rhs="─────────────────────────────┴────┴────────────┴───────────────────────────────────┘"
 
-  if [ -n "${GITHUB_OUTPUT}" ]; then
-    trace_lite "├${footer_rhs}"
-    trace_lite "└→ GITHUB_OUTPUT:"
-    trace_lite "$(cat "${GITHUB_OUTPUT}" | sed 's/^/    /')"
-  else
-    trace_lite "└${footer_rhs}"
+  local piping="└"
+  if [ -n "${GIT_PUSH_OUTPUT_DUMP}" ] || [ -n "${GITHUB_OUTPUT}" ]; then
+    piping="├"
   fi
+
+  trace_lite "${piping}${footer_rhs}"
+
+  if [ -s "${GIT_PUSH_OUTPUT_DUMP}" ]; then
+    if [ -z "${GITHUB_OUTPUT}" ]; then
+      piping="└"
+    fi
+
+    trace_lite "${piping}→ git pushes:"
+    trace_lite "$(cat "${GIT_PUSH_OUTPUT_DUMP}" | sed 's/^/    /')"
+  fi
+
+  command rm "${GIT_PUSH_OUTPUT_DUMP}"
+
+  if [ -s "${GITHUB_OUTPUT}" ]; then
+    piping="└"
+
+    trace_lite "${piping}→ GITHUB_OUTPUT:"
+    trace_lite "$(cat "${GITHUB_OUTPUT}" | sed 's/^/    /')"
+  fi
+
+  # Obvi, don't remove ${GITHUB_OUTPUT}, which GHA uses.
 }
 
 # ***
@@ -213,7 +235,8 @@ wrangle_tag () {
       git tag -d "${tag_name}" 2> /dev/null || true
 
       if ${CI:-false}; then
-        git push "${EAPP_CI_REMOTE_NAME}" ":refs/tags/${tag_name}"
+        git push "${EAPP_CI_REMOTE_NAME}" ":refs/tags/${tag_name}" \
+          > "${GIT_PUSH_OUTPUT_DUMP}"
       fi
     fi
   elif [ -n "${new_tag_value}" ]; then
@@ -222,7 +245,8 @@ wrangle_tag () {
       git tag -f -a "${tag_name}" -m "${new_tag_value}"
 
       if ${CI:-false}; then
-        git push -f "${EAPP_CI_REMOTE_NAME}" "refs/tags/${tag_name}"
+        git push -f "${EAPP_CI_REMOTE_NAME}" "refs/tags/${tag_name}" \
+          > "${GIT_PUSH_OUTPUT_DUMP}"
       fi
     fi
   fi
@@ -285,13 +309,12 @@ is_this_tag_object_specified () {
   trace_full "which_tag: ${which_tag}"
   trace_full "tag_name: ${tag_name}"
 
-  # At first, caller leaves which_tag unset,
+  # Sometimes, initially, workflows call with which_tag unset,
   # and we procure a list of all tag names.
   [ -n "${which_tag}" ] || tag_names+=("${tag_name}")
 
-  # Then, caller iterates over the list of
-  # tag names, and we set the `local` vars
-  # for that tag.
+  # Other times, workflows specify the tag name, and we'll use
+  # `local` vars. to return values for that tag.
   [ -n "${which_tag}" ] && [ "${which_tag}" = "${tag_name}" ]
 }
 
@@ -303,7 +326,7 @@ set_tag_locals_inhibit_cascade () {
   if is_this_tag_object_specified "${which_tag}" "${tag_name}"; then
     out_name="old_inhibit_cascade"
     tag_scope="HEAD"
-    default_value="false"
+    default_value="true"
     new_tag_value="${EAPP_INHIBIT_CASCADE}"
     delete_if=${EAPP_DELETE_INHIBIT_CASCADE:-false}
   fi
@@ -327,7 +350,7 @@ set_tag_locals_cascade_updatedeps () {
   if is_this_tag_object_specified "${which_tag}" "${tag_name}"; then
     out_name="old_cascade_updatedeps"
     tag_scope="HEAD"
-    default_value="true"
+    default_value="skip"
     new_tag_value="${EAPP_CASCADE_UPDATEDEPS}"
     delete_if=${EAPP_DELETE_CASCADE_UPDATEDEPS:-false}
   fi
@@ -348,7 +371,7 @@ set_tag_locals_cascade_versioning () {
     # choose from a dropdown to send workflow_event to initiate the cascade.
     # - So this tag value should always be set.
     # But we'll use 'alpha' to match update-merged.yml.
-    default_value="alpha"
+    default_value="skip"
     new_tag_value="${EAPP_CASCADE_VERSIONING}"
     delete_if=${EAPP_DELETE_CASCADE_VERSIONING:-false}
   fi

@@ -98,7 +98,7 @@ jobs:
       }}"
 
     steps:
-      - name: Checkout repo @ ${{ inputs.head-ref }}
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
@@ -109,6 +109,30 @@ jobs:
           #   intensive and/or degrades job performance. *Just saying.*
           fetch-depth: 1
           fetch-tags: true
+
+      # ***
+
+      # NODRY: See similar steps: ci-tags-wrangle.yml, update-merged.yml
+      - name: Prepare committer
+        run: |
+          assert_git_email_known_ci () {
+            test -n "${UPDEPS_USER_EMAIL}" \
+              && return 0 || true
+
+            >&2 echo "ERROR: Please set UPDEPS_USER_EMAIL " \
+              "organization or project variable"
+
+            exit 1
+          }
+          assert_git_email_known_ci
+
+          git config user.email "${UPDEPS_USER_EMAIL}"
+          git config user.name \
+            "${UPDEPS_USER_NAME_CI_TAGS:-${UPDEPS_USER_NAME:-release-bot}}"
+        env:
+          UPDEPS_USER_EMAIL: ${{ vars.UPDEPS_USER_EMAIL }}
+          UPDEPS_USER_NAME: ${{ vars.UPDEPS_USER_NAME }}
+          UPDEPS_USER_NAME_CI_TAGS: ${{ vars.UPDEPS_USER_NAME_CI_TAGS }}
 
       # ***
 
@@ -125,3 +149,20 @@ jobs:
           EAPP_DELETE_CASCADE_UPDATEDEPS: ${{ inputs.delete-cascade-updatedeps }}
           EAPP_CASCADE_VERSIONING: ${{ inputs.cascade-versioning }}
           EAPP_DELETE_CASCADE_VERSIONING: ${{ inputs.delete-cascade-versioning }}
+
+      # ***
+
+      - name: Trace vars
+        run: |
+          echo "old-inhibit-cascade: ${{
+            steps.wrangle-ci-tags.outputs.old_inhibit_cascade
+          }}"
+          echo "old-inhibit-forever: ${{
+            steps.wrangle-ci-tags.outputs.old_inhibit_forever
+          }}"
+          echo "old-cascade-updatedeps: ${{
+            steps.wrangle-ci-tags.outputs.old_cascade_updatedeps
+          }}"
+          echo "old-cascade-versioning: ${{
+            steps.wrangle-ci-tags.outputs.old_cascade_versioning
+          }}"

@@ -11,25 +11,11 @@ make_develop () {
   local VENV_PYVER="$2"
   local VENV_ARGS="$3"
   local EDITABLE_DIR="$4"
-
-  _pyenv_prepare_shell "${VENV_PYVER}"
-
-  local VENV_CREATED=false
-  _venv_manage_and_activate "${VENV_NAME}" "${VENV_ARGS}" "" "${VENV_NAME}"
-
-  if ${VENV_CREATED} || ${VENV_FORCE:-false} ; then
-    command rm -f ${EDITABLE_DIR}/poetry.lock
-
-    # MAYBE: Also move pip installs herein and skip if VENV_CREATED already?
-    #
-    #   _install_poetry_and_plugins
-  fi
-
-  _install_poetry_and_plugins
+  local EDITABLE_PJS="$5"
 
   # Don't assume user's pyproject.toml's poetry.group's match ours.
   local install_with="${PO_INSTALL_WITH}"
-  if test -z "${install_with}"; then
+  if [ -z "${install_with}" ]; then
     # Specific to EAPP's pyproject.toml, and *many* of its followers
     # (but not all).
     install_with="--with dist,i18n,lint,test,docstyle,docs,extras"
@@ -44,23 +30,44 @@ make_develop () {
     install_with="$(add_with_group_if_defined "${install_with}" "project_extras")"
   fi
 
-  # ***
+  _pyenv_prepare_shell "${VENV_PYVER}"
 
-  # Ensure poetry.lock up-to-date with any recent pyproject.toml changes.
+  # IGNOR: This fcn. sets VENV_CREATED
+  _venv_manage_and_activate "${VENV_NAME}" "${VENV_ARGS}" "" "${VENV_NAME}"
 
-  >&2 echo
-  >&2 echo "poetry -C ${EDITABLE_DIR} lock"
-  >&2 echo
+  _install_poetry_and_plugins
 
-  poetry -C ${EDITABLE_DIR} lock
+  # Assumptions:
+  # - For new projects, that Caller called `make install`
+  #   to generate poetry.lock, and committed the file.
+  # - For new clones, that Caller called `make develop`
+  #   to copy and modify <dir>/pyproject.toml)
+  #
+  # Here we copy the poetry.lock from `make install` (which
+  # has all the pinned versions that end users use), and then
+  # update solely "our" deps to use the local sources instead.
 
-  # ***
+  # Clobber <dir>/poetry.lock with release copy
+  command cp "poetry.lock" "${EDITABLE_DIR}/poetry.lock"
 
-  >&2 echo
-  >&2 echo "poetry -C ${EDITABLE_DIR} install ${install_with}"
-  >&2 echo
+  # Convert "our" deps in poetry.lock to local paths
+  _echo
+  _echo "poetry -C ${EDITABLE_DIR} update --lock ${EDITABLE_PJS}"
+
+  poetry -C "${EDITABLE_DIR}" update --lock ${EDITABLE_PJS}
+
+  # Install to venv using *local* ("editable") paths for "our" deps
+  _echo
+  _echo "poetry -C ${EDITABLE_DIR} install ${install_with}"
 
   poetry -C ${EDITABLE_DIR} install ${install_with}
+
+  # ***
+
+  # Project: https://github.com/landonb/git-bump-version-tag
+  #
+  # Easily apply a semantic version tag.
+  git config alias.bump "! bin/git-bump-version-tag"
 }
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
@@ -72,7 +79,7 @@ make_doc8_pip () {
 
   _pyenv_prepare_shell "${VENV_PYVER}"
 
-  # local VENV_CREATED=false
+  # IGNOR: This fcn. sets VENV_CREATED
   _venv_manage_and_activate "${VENV_DOC8}" "" "" "${VENV_NAME}"
 
   python -c "import doc8" 2> /dev/null \
@@ -97,7 +104,7 @@ make_doc8_poetry () {
 
   local VENV_DOC8=".venv"
 
-  # local VENV_CREATED=false
+  # IGNOR: This fcn. sets VENV_CREATED
   _venv_manage_and_activate "${VENV_DOC8}" "" "" ""
 
   _install_poetry_and_plugins
@@ -140,6 +147,7 @@ make_docs_html () {
   _venv_manage_and_activate "${VENV_DOCS}" "" "" "${VENV_NAME}"
 
   # E.g., `VENV_FORCE=true make docs`.
+  # - SAVVY/2023-11-29: Only VENV_FORCE usage. (Prev. used by make-develop.)
   if ${VENV_CREATED} || ${VENV_FORCE:-false} ; then
     _install_poetry_and_plugins
 
@@ -261,7 +269,8 @@ make_editable () {
     if [ -d "${pyprojs_full}/${project}" ]; then
       concat_pjs="${concat_pjs}${project}|"
     else
-      echo "ALERT: Missing project: ${pyprojs_full}/${project}"
+      # Apparently this is not a dire failure.
+      >&2 echo "ALERT: Missing project: ${pyprojs_full}/${project}"
     fi
   done
 
@@ -269,6 +278,7 @@ make_editable () {
 
   # ***
 
+  # Add ../ to pip-editable package paths, and to the readme path.
   sed -E \
     -e 's#^(packages = \[\{include = ")([^"]*"}])#\1../\2#' \
     -e 's#^(packages = \[\{include = "[^"]*", from = ")#\1../#' \
@@ -283,9 +293,32 @@ make_editable () {
 
   # ***
 
-  local editable_link="${EDITABLE_DIR}/${SOURCE_DIR}"
-  [ -h "${editable_link}" ] && command rm "${editable_link}"
-  command ln -s "../${SOURCE_DIR}" "${editable_link}"
+  ensure_pyproject_dir_src_symlink "${EDITABLE_DIR}" "${SOURCE_DIR}"
+}
+
+ensure_pyproject_dir_src_symlink () {
+  local pyproject_dir="$1"
+  local source_dir="$2"
+
+  (
+    cd "${pyproject_dir}"
+
+    # E.g., src -> ../src
+    ensure_symlink_if_exists "../${source_dir}" "${source_dir}"
+  )
+}
+
+ensure_symlink_if_exists () {
+  local ln_source="$1"
+  local ln_target="$2"
+
+  if [ -h "${ln_target}" ]; then
+    command rm "${ln_target}"
+  fi
+
+  if [ -e "${ln_source}" ]; then
+    command ln -s "${ln_source}" "${ln_target}"
+  fi
 }
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
@@ -306,11 +339,16 @@ poetry_install_to_venv () {
   local venv_default="$4"
   local pyproject_dir="${5:-.}"
 
+  command -v deactivate >/dev/null 2>&1 && deactivate  
+
   eval "$($(which pyenv) init -)"
 
   # Ensure make-install uses default Python version.
+  # CXREF: All other venv users call _pyenv_prepare_shell
+  #        instead to use the VENV_PYVER from Makefile.
   pyenv shell --unset
 
+  # IGNOR: This fcn. sets VENV_CREATED
   _venv_manage_and_activate \
     "${venv_name}" "${venv_args}" "${venv_home}" "${venv_default}"
 
@@ -343,8 +381,10 @@ install_prerelease () {
   local VENV_NAME="$3"
   local PYPROJECT_PRERELEASE_DIR="$4"
   local EDITABLE_PJS="$5"
+  local SOURCE_DIR="$6"
 
-  prepare_poetry_prerelease "${PYPROJECT_PRERELEASE_DIR}" "${EDITABLE_PJS}"
+  prepare_poetry_prerelease "${PYPROJECT_PRERELEASE_DIR}" "${EDITABLE_PJS}" \
+    "${SOURCE_DIR}"
 
   local venv_name="${VENV_NAME_PRERELEASE}"
   # Prefer local venv, especially because venv space adds up, and users
@@ -361,6 +401,7 @@ install_prerelease () {
 prepare_poetry_prerelease () {
   local PYPROJECT_PRERELEASE_DIR="$1"
   local EDITABLE_PJS="$2"
+  local SOURCE_DIR="$3"
 
   # This fcn clobbery (of <dir>/pyproject.toml and <dir>/poetry.lock).
 
@@ -372,16 +413,24 @@ prepare_poetry_prerelease () {
     exit 1
   fi
 
+  # Note: If user doesn't commit pyproject.toml and poetry.lock,
+  # update-deps.yml workflow will do it (via bin/update-poetry).
+
   # Clobber <dir>/pyproject.toml
   make_pyproject_prerelease "${PYPROJECT_PRERELEASE_DIR}" "${EDITABLE_PJS}"
 
   # Clobber <dir>/poetry.lock
   command cp "poetry.lock" "${PYPROJECT_PRERELEASE_DIR}/poetry.lock"
 
-  poetry -C "${PYPROJECT_PRERELEASE_DIR}" lock --no-update
-
-  # Stay consistent with the main project poetry.lock, but update
-  # "our" deps to their latest, possibly pre-release versions.
+  # Update poetry.lock to use "our" deps' versions from test.PyPI.
+  # - Here's how "priority" from [[tool.poetry.source]] works:
+  #   - Poetry uses the first package it finds from any source,
+  #     whether priority=supplemental (search multiple sources),
+  #     or whether priority=explicit (to probe a single source).
+  #   - There's no option for Poetry to use the highest-versioned
+  #     package it finds from *any* source.
+  # - So EAPP publishes *every* release, pre-release and normal,
+  #   to test.PyPI, ensuring this poetry-update uses our latests.
   poetry -C "${PYPROJECT_PRERELEASE_DIR}" update --lock ${EDITABLE_PJS}
 }
 
@@ -390,9 +439,6 @@ make_pyproject_prerelease () {
   local EDITABLE_PJS="$2"
 
   mkdir -p "${PYPROJECT_PRERELEASE_DIR}"
-
-  # Tell user they can delete this directory.
-  touch "${PYPROJECT_PRERELEASE_DIR}/.ephemeral-dir"
 
   echo \
     "# This file is automatically @generated by Makefile and should not be changed by hand.\n" \
@@ -414,6 +460,20 @@ make_pyproject_prerelease () {
   # to this:
   #   easy-as-pypi-appdirs = { version = "^1.1.1", source = "testpypi" }
 
+  # Add ../ to pip-editable package paths, and to the readme path.
+  # - Note that make_editable prefixes some paths ../ such as pip-editable
+  #   package paths, but a published build won't have any of these:
+  #     sed -E \
+  #       -e 's#^(packages = \[\{include = ")([^"]*"}])#\1../\2#' \
+  #       -e 's#^(packages = \[\{include = "[^"]*", from = ")#\1../#' \
+  #   And we cannot reference the readme using a ../parent path, like this:
+  #       -e 's#^(readme = ")#\1../#' \
+  #   Or poetry-build will fail:
+  #     '/path/to/easy-as-pypi/README.rst' is not in the subpath of
+  #     '/path/to/easy-as-pypi/.pyproject-prerelease' OR one path is
+  #     relative and the other is absolute.
+  #   because it doesn't know where to put such a path in the 'sdist'.
+  #   - REFER: https://github.com/python-poetry/poetry/issues/5621
   awk ' \
     match($0, /^('${concat_pjs}')\s*=\s*"([<>=^]{1,2}\s*[0-9]+[^"]*)"/, matches) { \
       print matches[1] " = { version = \"" matches[2] "\", source = \"testpypi\" }"; \
@@ -521,7 +581,7 @@ gvim_find_first_running_gvim_servername () {
   # ***
 
   if [ ${n_gvims} -gt 1 ] && [ -z "${GVIM_OPEN_SERVERNAME+x}" ]; then
-    >&2 echo "Found ${n_gvims} gvim and picked “${servername}”"
+    >&2 echo "ALERT: Found ${n_gvims} gvim and picked “${servername}”"
     >&2 echo "- Use GVIM_OPEN_SERVERNAME to specify which gvim to always pick,"
     >&2 echo "  or \`GVIM_OPEN_SERVERNAME=\` in your shell inhibits this message."
   fi
@@ -539,6 +599,8 @@ gvim_verify_servername_running () {
 
 _pyenv_prepare_shell () {
   local venv_pyver="$1"
+
+  command -v deactivate >/dev/null 2>&1 && deactivate
 
   eval "$(~/.local/bin/pyenv init -)"
 
@@ -597,8 +659,6 @@ _venv_create_and_metaize () {
 _install_poetry_and_plugins () {
   local verbose="${1:-false}"
 
-  _echo () { ${verbose} || return 0; echo "$@"; }
-
   _echo
   _echo "pip install -U pip setuptools"
   pip install -U pip setuptools
@@ -610,6 +670,15 @@ _install_poetry_and_plugins () {
   _echo
   _echo "poetry self add 'poetry-dynamic-versioning[plugin]'"
   poetry self add "poetry-dynamic-versioning[plugin]"
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+
+_echo () {
+  ${verbose} \
+    || return 0
+
+  echo "$@"
 }
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
