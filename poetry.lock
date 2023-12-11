@@ -651,13 +651,13 @@ readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd
 
 [[package]]
 name = "easy-as-pypi-termio"
-version = "1.0.0"
+version = "1.0.1"
 description = "Click CLI conveniences for your next Python CLI based on easy-as-pypi"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_termio-1.0.0-py3-none-any.whl", hash = "sha256:d2f7bf71d47f2922a109d590dc837c1c5396a69d9593b0e2b2af67095102acd9"},
-    {file = "easy_as_pypi_termio-1.0.0.tar.gz", hash = "sha256:c9f773fa511d62c69190f4e2c32eea2e80d42b351d33f2dca0e71814d02dabdb"},
+    {file = "easy_as_pypi_termio-1.0.1-py3-none-any.whl", hash = "sha256:7cf103a7cc3f56758fea180e342d2dada67a2fcee3fe2ccbda1442ab89c45cb9"},
+    {file = "easy_as_pypi_termio-1.0.1.tar.gz", hash = "sha256:aecff6e89ab4602f5478876949004f1db6ebdaf6cfbea6e6e4ae6e4b4b9f72e7"},
 ]
 
 [package.dependencies]
