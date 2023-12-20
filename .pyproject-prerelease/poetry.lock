@@ -27,13 +27,13 @@ typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.9\""}
 
 [[package]]
 name = "ansi-escape-room"
-version = "1.5.0"
+version = "1.5.2"
 description = "Simple library for color and formatting to terminal"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "ansi_escape_room-1.5.0-py3-none-any.whl", hash = "sha256:a687202c19b5c5712be71ec29201c90ee7fe0a3546815f51992923fc185b7970"},
-    {file = "ansi_escape_room-1.5.0.tar.gz", hash = "sha256:23f1113817fe9e002262a2b2f587a7230bba770a1b121e06862cfe66a90a306e"},
+    {file = "ansi_escape_room-1.5.2-py3-none-any.whl", hash = "sha256:20658dc2c0411161971c69b65492874003f518ff53eb42ceca58f493f186071d"},
+    {file = "ansi_escape_room-1.5.2.tar.gz", hash = "sha256:9bc0050e083d3ee3dba5f767a1448c8f7ba9d4fc23920480a0329ff5e42a6c16"},
 ]
 
 [package.extras]
@@ -376,13 +376,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "click-hotoffthehamster"
-version = "7.8.0"
+version = "7.8.2"
 description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "click_hotoffthehamster-7.8.0-py3-none-any.whl", hash = "sha256:5050ff1cd06ce3fe3c3553e47fa9ca50438196b1e63648e1d859450dee091206"},
-    {file = "click_hotoffthehamster-7.8.0.tar.gz", hash = "sha256:d38f60768b49f31fe3188d80420249e18cd3f1c9e0fb0ba10d43e62e15349ae3"},
+    {file = "click_hotoffthehamster-7.8.2-py3-none-any.whl", hash = "sha256:4020ed5d9b0c0067ad69e867ac4deac4890af5b41dab34115e9f6ed8103676ec"},
+    {file = "click_hotoffthehamster-7.8.2.tar.gz", hash = "sha256:4d6c289fcdf4e8456d181f4e0a86f76a5e3c76c2390330f23459507335c87336"},
 ]
 
 [package.dependencies]
@@ -419,13 +419,13 @@ files = [
 
 [[package]]
 name = "config-decorator"
-version = "2.0.15"
+version = "2.0.17"
 description = "Class @decorator for defining exquisite settings configurations"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "config_decorator-2.0.15-py3-none-any.whl", hash = "sha256:d5173ddf78ed15f7c383c68bb781041fe2e4e4c3eb11680f7149b4bb0fb85696"},
-    {file = "config_decorator-2.0.15.tar.gz", hash = "sha256:e3bcdc0fc31895bd718ad545a79fae78ba9afc7583ad301f47ce0b6fdd9ac946"},
+    {file = "config_decorator-2.0.17-py3-none-any.whl", hash = "sha256:6fcff56040feff30a7c14b22f445345d96e5bb407472015514591618cceee5dc"},
+    {file = "config_decorator-2.0.17.tar.gz", hash = "sha256:00c8fa78eef1e300839e1e8a2167e8970db494bf575faa6e94467bb81fffd632"},
 ]
 
 [package.extras]
@@ -634,13 +634,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "easy-as-pypi-appdirs"
-version = "1.1.1"
+version = "1.1.3"
 description = "AppDirs overlay with mkdir -p side effect and Singleton access"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_appdirs-1.1.1-py3-none-any.whl", hash = "sha256:39c1849ca72d6f91c6df59677a4a8c5c63c5956180eaf10d6f5869e314bc601e"},
-    {file = "easy_as_pypi_appdirs-1.1.1.tar.gz", hash = "sha256:4ed3300a812091b7925d91441182d7ff09afdc55d4bc1e1ea351b0f010a06db4"},
+    {file = "easy_as_pypi_appdirs-1.1.3-py3-none-any.whl", hash = "sha256:16a7bd4d50ecf84f59e2094b9555193e0b5e6e1326e421bc8d596fc5b6bfbacd"},
+    {file = "easy_as_pypi_appdirs-1.1.3.tar.gz", hash = "sha256:3e6abe39f62810a237c864ed8c2d4d00ceac87b2407cda69ec33b99f4c6c248f"},
 ]
 
 [package.dependencies]
@@ -651,13 +651,13 @@ readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd
 
 [[package]]
 name = "easy-as-pypi-termio"
-version = "1.0.0"
+version = "1.0.2"
 description = "Click CLI conveniences for your next Python CLI based on easy-as-pypi"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_termio-1.0.0-py3-none-any.whl", hash = "sha256:d2f7bf71d47f2922a109d590dc837c1c5396a69d9593b0e2b2af67095102acd9"},
-    {file = "easy_as_pypi_termio-1.0.0.tar.gz", hash = "sha256:c9f773fa511d62c69190f4e2c32eea2e80d42b351d33f2dca0e71814d02dabdb"},
+    {file = "easy_as_pypi_termio-1.0.2-py3-none-any.whl", hash = "sha256:b54e3b981c762e80a29200e9d7effee0f500e4a3732b3d9973b833ff99fbaeeb"},
+    {file = "easy_as_pypi_termio-1.0.2.tar.gz", hash = "sha256:ecc4d18eb5583eb2d9f399098411124e1c4f3df67a684bc4a652ae8f534adbef"},
 ]
 
 [package.dependencies]
