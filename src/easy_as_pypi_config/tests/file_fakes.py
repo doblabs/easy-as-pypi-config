@@ -9,6 +9,7 @@ import os
 import sys
 import tempfile
 import unicodedata
+from pathlib import Path
 
 import fauxfactory
 import py
@@ -40,13 +41,61 @@ import pytest
 #   that are illegal as part of an HFS Plus string"
 #   https://developer.apple.com/library/archive/technotes/tn/tn1150table.html
 
+# 2023-12-20: Failed again. I've add a `Path()` check, let's see if that works!
+# REFER: Some blather on OS path and Unicode, from Apple's perspective:
+# https://opensource.apple.com/source/subversion/subversion-52/subversion/notes/unicode-composition-for-filenames.auto.html
+
 
 @pytest.fixture
 def filename():
     """Provide a filename string."""
     filename = fauxfactory.gen_utf8()
     if sys.platform.startswith("darwin"):
-        filename = unicodedata.normalize("NFC", filename)
+        # FIXME/2023-12-20 05:10: Design test to fail on macOS again.
+        # - I'm trying to think how I'd generate output from pytest on CI,
+        #   other than raising an error and having CI dump the message.
+        # - Though I want the job to fail so I think to look at this trace!
+        trace_msgs = []
+
+        def validate_filename(fname, context):
+            trace_msg = f"Path({fname})"
+            try:
+                Path(fname)
+                trace_msgs.append(f"{context}: {trace_msg} passed")
+            except OSError as err:
+                fname = None
+                trace_msgs.append(f"{context}: {trace_msg} failed: {repr(err)}")
+
+            return fname
+
+        raw_valid = validate_filename(filename, "raw")
+
+        nfc_fname = unicodedata.normalize("NFC", filename)
+        nfc_valid = validate_filename(nfc_fname, "NFC")
+
+        nfd_fname = unicodedata.normalize("NFD", filename)
+        nfd_valid = validate_filename(nfd_fname, "NFD")
+
+        if filename != nfc_fname:
+            trace_msgs.append("filename != nfc_fname")
+        if filename != nfd_fname:
+            trace_msgs.append("filename != nfd_fname")
+        if nfc_fname != nfd_fname:
+            trace_msgs.append("nfc_fname != nfd_fname")
+
+        if not raw_valid:
+            if not nfc_valid:
+                if not nfd_valid:
+                    raise RuntimeError(" / ".join(trace_msgs))
+                else:
+                    filename = nfd_fname
+            else:
+                filename = nfc_fname
+
+        # 2023-12-20: I want to see this failure when it happens next.
+        # - Then only do this error if none are valid.
+        if not (raw_valid and nfc_valid and nfd_valid):
+            raise RuntimeError(" / ".join(trace_msgs))
 
     return filename
 

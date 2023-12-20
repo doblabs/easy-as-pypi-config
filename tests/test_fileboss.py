@@ -222,6 +222,16 @@ foo
 # ***
 
 
+# WATCH/2023-12-20: This'll sometimes fails on macOS, e.g.,
+#
+#   ERROR at setup of TestGetConfigInstance.test_write_config_obj_fail_no_filename
+#       tests/test_fileboss.py:227: in simple_config_obj
+#           with open(filepath, "w") as conf_file:
+#               OSError: [Errno 92] Illegal byte sequence:
+#   '/private/var/folders/3s/vfzpb5r51gs6y328rmlgzm7c0000gn/T/pytest-of-runner/
+#       pytest-0/test_write_config_obj_fail_no_0/𖬌𔖞𘙌𑒚陉ᴿ𞓙隚쟥駊'
+#
+# - REFER: See comments atop and code within `def filename` fixture.
 @pytest.fixture()
 def simple_config_obj(filepath):
     with open(filepath, "w") as conf_file:
