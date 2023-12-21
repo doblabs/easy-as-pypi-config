@@ -376,13 +376,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "click-hotoffthehamster"
-version = "7.8.2"
+version = "7.8.3a2"
 description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "click_hotoffthehamster-7.8.2-py3-none-any.whl", hash = "sha256:4020ed5d9b0c0067ad69e867ac4deac4890af5b41dab34115e9f6ed8103676ec"},
-    {file = "click_hotoffthehamster-7.8.2.tar.gz", hash = "sha256:4d6c289fcdf4e8456d181f4e0a86f76a5e3c76c2390330f23459507335c87336"},
+    {file = "click_hotoffthehamster-7.8.3a2-py3-none-any.whl", hash = "sha256:71846801baf6c545fa18b176c7be877522587d8d9ecfdb4ea549db84cfed8603"},
+    {file = "click_hotoffthehamster-7.8.3a2.tar.gz", hash = "sha256:de98a6e7cea1b15f1334b43859d753988abc967d83b68d98910ade76f39e7ea6"},
 ]
 
 [package.dependencies]
@@ -390,6 +390,11 @@ colorama = {version = ">=0.4.6,<0.5.0", markers = "sys_platform == \"win32\""}
 
 [package.extras]
 readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd-theme (>=2.0.0rc4,<3.0.0)", "tomli (>=2.0.1)"]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
 
 [[package]]
 name = "codecov"
@@ -419,17 +424,22 @@ files = [
 
 [[package]]
 name = "config-decorator"
-version = "2.0.17"
+version = "2.0.17a1"
 description = "Class @decorator for defining exquisite settings configurations"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "config_decorator-2.0.17-py3-none-any.whl", hash = "sha256:6fcff56040feff30a7c14b22f445345d96e5bb407472015514591618cceee5dc"},
-    {file = "config_decorator-2.0.17.tar.gz", hash = "sha256:00c8fa78eef1e300839e1e8a2167e8970db494bf575faa6e94467bb81fffd632"},
+    {file = "config_decorator-2.0.17a1-py3-none-any.whl", hash = "sha256:f4996059765d5f39f0777ba83607818e96e28fa360c5aeb1550fd70c80e0cf68"},
+    {file = "config_decorator-2.0.17a1.tar.gz", hash = "sha256:a2756a0887d5f7dd0a701e7149fbaaeeb3d44d1cb410bd21faa23ebacdbc9bad"},
 ]
 
 [package.extras]
 readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd-theme (>=2.0.0rc4,<3.0.0)", "tomli (>=2.0.1)"]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
 
 [[package]]
 name = "configobj"
@@ -634,13 +644,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "easy-as-pypi-appdirs"
-version = "1.1.3"
+version = "1.1.5a1"
 description = "AppDirs overlay with mkdir -p side effect and Singleton access"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_appdirs-1.1.3-py3-none-any.whl", hash = "sha256:16a7bd4d50ecf84f59e2094b9555193e0b5e6e1326e421bc8d596fc5b6bfbacd"},
-    {file = "easy_as_pypi_appdirs-1.1.3.tar.gz", hash = "sha256:3e6abe39f62810a237c864ed8c2d4d00ceac87b2407cda69ec33b99f4c6c248f"},
+    {file = "easy_as_pypi_appdirs-1.1.5a1-py3-none-any.whl", hash = "sha256:60110c693fa8fb2955b3b37b254b76c9770b3beb2ff0f3312d7a3e9f4a11b7a3"},
+    {file = "easy_as_pypi_appdirs-1.1.5a1.tar.gz", hash = "sha256:667c7edfc498c0a550d921b5580f0c5468fa7dd204a44991944d4438a63d9a1e"},
 ]
 
 [package.dependencies]
@@ -648,6 +658,11 @@ appdirs = ">=1.4.4,<2.0.0"
 
 [package.extras]
 readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd-theme (>=2.0.0rc4,<3.0.0)", "tomli (>=2.0.1)"]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
 
 [[package]]
 name = "easy-as-pypi-termio"
@@ -657,7 +672,7 @@ optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
     {file = "easy_as_pypi_termio-1.0.2-py3-none-any.whl", hash = "sha256:b54e3b981c762e80a29200e9d7effee0f500e4a3732b3d9973b833ff99fbaeeb"},
-    {file = "easy_as_pypi_termio-1.0.2.tar.gz", hash = "sha256:ecc4d18eb5583eb2d9f399098411124e1c4f3df67a684bc4a652ae8f534adbef"},
+    {file = "easy_as_pypi_termio-1.0.2.tar.gz", hash = "sha256:60a5e628ed02353fed24dc7edc5ab82a3f669c20f8f624ca584e872da1f289f2"},
 ]
 
 [package.dependencies]
@@ -670,6 +685,11 @@ texttable = ">=1.6.7,<2.0.0"
 
 [package.extras]
 readthedocs = ["sphinx (>=6.2.1,<7.0.0)", "sphinx (>=7.2.6,<8.0.0)", "sphinx-rtd-theme (>=2.0.0rc4,<3.0.0)", "tomli (>=2.0.1)"]
+
+[package.source]
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "testpypi"
 
 [[package]]
 name = "exceptiongroup"
@@ -2560,4 +2580,4 @@ readthedocs = ["sphinx", "sphinx", "sphinx-rtd-theme", "tomli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "69c01e253b60588a650dab641ba8386464368b40c408f7e3b34e3880d8e42dd7"
+content-hash = "c6574910c8d389b1a8b80ae9185646d96f1dc4d96f3ba67528f061cd66744ad5"
