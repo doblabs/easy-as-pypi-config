@@ -644,13 +644,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "easy-as-pypi-appdirs"
-version = "1.1.5a1"
+version = "1.1.5a2"
 description = "AppDirs overlay with mkdir -p side effect and Singleton access"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_appdirs-1.1.5a1-py3-none-any.whl", hash = "sha256:60110c693fa8fb2955b3b37b254b76c9770b3beb2ff0f3312d7a3e9f4a11b7a3"},
-    {file = "easy_as_pypi_appdirs-1.1.5a1.tar.gz", hash = "sha256:667c7edfc498c0a550d921b5580f0c5468fa7dd204a44991944d4438a63d9a1e"},
+    {file = "easy_as_pypi_appdirs-1.1.5a2-py3-none-any.whl", hash = "sha256:a9c8c91d849854b2dde12d66d958cf15bba301cb137b134e933f761d43ddffc9"},
+    {file = "easy_as_pypi_appdirs-1.1.5a2.tar.gz", hash = "sha256:4b8883c6d5c5849755cd2e382a8d077fd7e77d1ba1948bd23beca13c606943d1"},
 ]
 
 [package.dependencies]
