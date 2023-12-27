@@ -644,13 +644,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "easy-as-pypi-appdirs"
-version = "1.1.5a2"
+version = "1.1.6a1"
 description = "AppDirs overlay with mkdir -p side effect and Singleton access"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_appdirs-1.1.5a2-py3-none-any.whl", hash = "sha256:a9c8c91d849854b2dde12d66d958cf15bba301cb137b134e933f761d43ddffc9"},
-    {file = "easy_as_pypi_appdirs-1.1.5a2.tar.gz", hash = "sha256:4b8883c6d5c5849755cd2e382a8d077fd7e77d1ba1948bd23beca13c606943d1"},
+    {file = "easy_as_pypi_appdirs-1.1.6a1-py3-none-any.whl", hash = "sha256:6e785000b29a17d813c4b6611b3718bfecef827a79695516a4790ed97eef718f"},
+    {file = "easy_as_pypi_appdirs-1.1.6a1.tar.gz", hash = "sha256:8d80e23d94cd881232e21e27c931a87fb63fbde3f0db95a18192f7c787ec06b7"},
 ]
 
 [package.dependencies]
@@ -666,13 +666,13 @@ reference = "testpypi"
 
 [[package]]
 name = "easy-as-pypi-termio"
-version = "1.0.2"
+version = "1.0.3a3"
 description = "Click CLI conveniences for your next Python CLI based on easy-as-pypi"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_termio-1.0.2-py3-none-any.whl", hash = "sha256:b54e3b981c762e80a29200e9d7effee0f500e4a3732b3d9973b833ff99fbaeeb"},
-    {file = "easy_as_pypi_termio-1.0.2.tar.gz", hash = "sha256:60a5e628ed02353fed24dc7edc5ab82a3f669c20f8f624ca584e872da1f289f2"},
+    {file = "easy_as_pypi_termio-1.0.3a3-py3-none-any.whl", hash = "sha256:c230bf8e093bbc44b383112a4188c9bc6f3fe792af535883aa10c69947c12055"},
+    {file = "easy_as_pypi_termio-1.0.3a3.tar.gz", hash = "sha256:53d90df17f9ac58ee2f8301289df9069220297019997fa5a79cf3a145048310a"},
 ]
 
 [package.dependencies]
@@ -2580,4 +2580,4 @@ readthedocs = ["sphinx", "sphinx", "sphinx-rtd-theme", "tomli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "c6574910c8d389b1a8b80ae9185646d96f1dc4d96f3ba67528f061cd66744ad5"
+content-hash = "27675c5cf6ddd36cbd47e6218b66e200cda4fa5eb4b3c6a3808adfc1ed6539b4"

@@ -1045,23 +1045,23 @@ configobj = "^5.0"
 #     https://github.com/pallets/click
 #
 # SAVVY: click-hoth v7.8 is pallets's click v8.x fork.
-click-hotoffthehamster = { version = "^7.8.0", source = "testpypi" }
+click-hotoffthehamster = { version = "^7.8.0", source = "testpypi", allow-prereleases = true }
 
 # - "Pythonic config @decorator"
 #
 #   https://pypi.org/project/config-decorator
 #   https://github.com/hotoffthehamster/config-decorator
-config-decorator = { version = "^2.0.15", source = "testpypi" }
+config-decorator = { version = "^2.0.15", source = "testpypi", allow-prereleases = true }
 
 # - "ActiveState/appdirs + Singleton (app-wide access w/out appname) + `mkdir -p`"
 #
 #   https://pypi.org/project/easy-as-pypi-appdirs
 #   https://github.com/doblabs/easy-as-pypi-appdirs#🛣
-easy-as-pypi-appdirs = { version = "^1.1.1", source = "testpypi" }
+easy-as-pypi-appdirs = { version = "^1.1.1", source = "testpypi", allow-prereleases = true }
 
 # - "Click + ansi_escape_room (color) + convenience"
 #
 #   https://pypi.org/project/easy-as-pypi-termio
 #   https://github.com/doblabs/easy-as-pypi-termio#🍉
-easy-as-pypi-termio = { version = "^1.0.0", source = "testpypi" }
+easy-as-pypi-termio = { version = "^1.0.0", source = "testpypi", allow-prereleases = true }
 
