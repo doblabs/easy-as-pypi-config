@@ -424,13 +424,13 @@ files = [
 
 [[package]]
 name = "config-decorator"
-version = "2.0.18a1"
+version = "2.0.19a1"
 description = "Class @decorator for defining exquisite settings configurations"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "config_decorator-2.0.18a1-py3-none-any.whl", hash = "sha256:739af370ded4e9f4ab040b459b17703551f8c95aef229b1b55409c5a8c633473"},
-    {file = "config_decorator-2.0.18a1.tar.gz", hash = "sha256:b713d6d1b46c94a08020fbba61ca767035cb43cdd1662b133d4f1546533f761f"},
+    {file = "config_decorator-2.0.19a1-py3-none-any.whl", hash = "sha256:b2729810940f7153e8da42ad77fed3e48f76c89b1e90b3bd01a014041dce38be"},
+    {file = "config_decorator-2.0.19a1.tar.gz", hash = "sha256:c1b0f4c7a3d005b2952b72302dcdaafa25f8fd38e3ded75788a5215568ade728"},
 ]
 
 [package.extras]
@@ -644,13 +644,13 @@ packaging = ">=20.9"
 
 [[package]]
 name = "easy-as-pypi-appdirs"
-version = "1.1.6a2"
+version = "1.1.6a3"
 description = "AppDirs overlay with mkdir -p side effect and Singleton access"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_appdirs-1.1.6a2-py3-none-any.whl", hash = "sha256:79e1f0ebac9153b58e08c6ebc0fe1ba8db8c316806e47a392bd962a109a30f38"},
-    {file = "easy_as_pypi_appdirs-1.1.6a2.tar.gz", hash = "sha256:a6b5e851bb59607c7fbc3ab38faec75fd40ada29508e6c7eb8f1bb77237480c4"},
+    {file = "easy_as_pypi_appdirs-1.1.6a3-py3-none-any.whl", hash = "sha256:27b5cf150c920f5b927784b7bfd940ad11fcd71810b32c9a885f5ea243c7b02a"},
+    {file = "easy_as_pypi_appdirs-1.1.6a3.tar.gz", hash = "sha256:c9e0265af4083cbfc2fc01833230cba8e24af1232be18ec2a125ad776cdfdadf"},
 ]
 
 [package.dependencies]
@@ -666,13 +666,13 @@ reference = "testpypi"
 
 [[package]]
 name = "easy-as-pypi-termio"
-version = "1.0.4a1"
+version = "1.0.4a2"
 description = "Click CLI conveniences for your next Python CLI based on easy-as-pypi"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "easy_as_pypi_termio-1.0.4a1-py3-none-any.whl", hash = "sha256:7a43c5258620f36856f5443cc190e03c630af5b9fb6c18317bcf50b0e04bde70"},
-    {file = "easy_as_pypi_termio-1.0.4a1.tar.gz", hash = "sha256:cee70e027f033e9282a8626217f4acf86839c28d7d06c6e4df3eeef025085260"},
+    {file = "easy_as_pypi_termio-1.0.4a2-py3-none-any.whl", hash = "sha256:e4991e22bdd2a08fc65303df330f1852d09e66493159714288207ba4a551609c"},
+    {file = "easy_as_pypi_termio-1.0.4a2.tar.gz", hash = "sha256:7ba238c59045d97cb7cf90123b1bf2aa81d918afb8d139ef7818be83b2dbdb32"},
 ]
 
 [package.dependencies]
