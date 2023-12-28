@@ -27,13 +27,13 @@ typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.9\""}
 
 [[package]]
 name = "ansi-escape-room"
-version = "1.5.2"
+version = "1.5.3"
 description = "Simple library for color and formatting to terminal"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "ansi_escape_room-1.5.2-py3-none-any.whl", hash = "sha256:20658dc2c0411161971c69b65492874003f518ff53eb42ceca58f493f186071d"},
-    {file = "ansi_escape_room-1.5.2.tar.gz", hash = "sha256:9bc0050e083d3ee3dba5f767a1448c8f7ba9d4fc23920480a0329ff5e42a6c16"},
+    {file = "ansi_escape_room-1.5.3-py3-none-any.whl", hash = "sha256:199b2dd8cc02ce977b0a3486c753d3ce2c252bcda2c0342148ac966237640cf3"},
+    {file = "ansi_escape_room-1.5.3.tar.gz", hash = "sha256:5fd4535858048013280ee01cc1e974ee82fb4ef728881c1615004a04e3af9cb0"},
 ]
 
 [package.extras]
@@ -376,13 +376,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "click-hotoffthehamster"
-version = "7.8.3"
+version = "7.8.4"
 description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "click_hotoffthehamster-7.8.3-py3-none-any.whl", hash = "sha256:6007f77fdb705376c1856ecb656e34a7b9bdb013c08836db2e960568ffe5b011"},
-    {file = "click_hotoffthehamster-7.8.3.tar.gz", hash = "sha256:601141eeb8110a4a48c28ac50429858d212e1123ae56d703a45327d22fd44185"},
+    {file = "click_hotoffthehamster-7.8.4-py3-none-any.whl", hash = "sha256:a1a90726b3ea4d2018f3f654a4cdadbe36f122b565db9edafeaf3fc30aeb297f"},
+    {file = "click_hotoffthehamster-7.8.4.tar.gz", hash = "sha256:2bc509c4e14423fba1ac737d2b368001dbd664b1c15307e8c3a0ae30bac6f04f"},
 ]
 
 [package.dependencies]
@@ -419,13 +419,13 @@ files = [
 
 [[package]]
 name = "config-decorator"
-version = "2.0.17"
+version = "2.0.18"
 description = "Class @decorator for defining exquisite settings configurations"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
-    {file = "config_decorator-2.0.17-py3-none-any.whl", hash = "sha256:6fcff56040feff30a7c14b22f445345d96e5bb407472015514591618cceee5dc"},
-    {file = "config_decorator-2.0.17.tar.gz", hash = "sha256:00c8fa78eef1e300839e1e8a2167e8970db494bf575faa6e94467bb81fffd632"},
+    {file = "config_decorator-2.0.18-py3-none-any.whl", hash = "sha256:8057e83ab87c11c9af9a2a89b887e01fd8523954ff39857691aa44ee44f8e421"},
+    {file = "config_decorator-2.0.18.tar.gz", hash = "sha256:87d2184ea017f2514128fd34235851fe5a00ce6c30281b866034bd6e98ec84aa"},
 ]
 
 [package.extras]
